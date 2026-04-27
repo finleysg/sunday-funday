@@ -56,21 +56,21 @@ No user-facing features yet. The goal is a green CI pipeline producing a deploya
 
 ## Phase 2 — Courses
 
-- [ ] Add `Course`, `CourseHole`, `Tee`, `TeeHole` tables to Prisma schema; migrate
-- [ ] Course list page (`app/(app)/courses`) — list + "add course" button
-- [ ] Multi-step course creation form:
+- [x] Add `Course`, `CourseHole`, `Tee`, `TeeHole` tables to Prisma schema; migrate
+- [x] Course list page (`app/(app)/courses`) — list + "add course" button
+- [x] Multi-step course creation form:
   - Step 1: name + 18 par inputs (default par 4)
   - Step 2: first tee — name, rating, slope, 18 SI inputs with permutation validation (1–18 each used once)
   - Step 3: "add another tee" repeats Step 2; "done" finishes
-- [ ] Course detail / edit screen
-- [ ] **Soft-immutable rule**: block edits if course is referenced by a `COMPLETE` game; offer "add new tee / deactivate" path instead
-- [ ] Bulk import endpoint:
+- [x] Course detail / edit screen
+- [x] **Soft-immutable rule**: block edits if course is referenced by a `COMPLETE` game; offer "add new tee / deactivate" path instead (scaffold only — `isCourseLocked` returns false until Phase 3 adds the `Game` model)
+- [x] Bulk import endpoint:
   - Upload `.xlsx`, parse with `exceljs`
   - Validate (course name, exactly 18 pars, SI permutations per tee, rating numeric, slope 55–155)
   - Surface all errors at once
   - Hard error if course name already exists
-- [ ] Downloadable template generator (admin screen button)
-- [ ] Seed two real courses for development
+- [x] Downloadable template generator (admin screen button)
+- [x] Seed two real courses for development
 
 **Done when:** an admin can create a course manually OR via spreadsheet upload, and the courses appear in the database with correct par + SI per tee.
 

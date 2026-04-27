@@ -86,3 +86,54 @@ model Player {
 
   @@map("player")
 }
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  holes CourseHole[]
+  tees  Tee[]
+
+  @@map("course")
+}
+
+model CourseHole {
+  courseId   String
+  holeNumber Int
+  par        Int
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, holeNumber])
+  @@map("course_hole")
+}
+
+model Tee {
+  id        String   @id @default(cuid())
+  courseId  String
+  name      String
+  rating    Decimal  @db.Decimal(4, 1)
+  slope     Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  holes  TeeHole[]
+
+  @@unique([courseId, name])
+  @@index([courseId])
+  @@map("tee")
+}
+
+model TeeHole {
+  teeId       String
+  holeNumber  Int
+  strokeIndex Int
+  tee         Tee    @relation(fields: [teeId], references: [id], onDelete: Cascade)
+
+  @@id([teeId, holeNumber])
+  @@map("tee_hole")
+}

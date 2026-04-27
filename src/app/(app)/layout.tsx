@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { isAdmin } from "@/lib/admin";
 import { requireSession } from "@/lib/session";
 
@@ -13,6 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <TopBar userName={session.user.name} userEmail={session.user.email} />
       <main className="flex-1 pb-20">{children}</main>
       <BottomNav admin={admin} />
+      <Toaster />
     </div>
   );
 }
