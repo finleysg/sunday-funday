@@ -9,6 +9,7 @@ import { requireSession } from "@/lib/session";
 import { GameHeader } from "../_components/game-header";
 import { GroupBuilder } from "../_components/group-builder";
 import { RosterBuilder } from "../_components/roster-builder";
+import { ScoreEntrySection } from "../_components/score-entry-section";
 import { StartGameButton } from "../_components/start-game-button";
 
 type Params = Promise<{ id: string }>;
@@ -74,6 +75,13 @@ export default async function GameDetailPage({ params }: { params: Params }) {
 
   const editable = admin && game.status === "SETUP";
 
+  // Locate the signed-in user's group within this game (if any). Used by
+  // the score-entry section to highlight their own group with a primary
+  // CTA and route the others to read-only mode.
+  const userEmail = session.user.email.toLowerCase();
+  const userEntry = game.entries.find((e) => e.player.email.toLowerCase() === userEmail);
+  const userGroupId = userEntry?.member?.groupId ?? null;
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
       <div>
@@ -95,6 +103,18 @@ export default async function GameDetailPage({ params }: { params: Params }) {
         }}
         admin={admin}
       />
+
+      {game.status === "IN_PROGRESS" || game.status === "COMPLETE" ? (
+        <ScoreEntrySection
+          gameId={game.id}
+          userGroupId={userGroupId}
+          groups={game.groups.map((g) => ({
+            id: g.id,
+            name: g.name,
+            memberNames: g.members.map((m) => m.gameEntry.player.name),
+          }))}
+        />
+      ) : null}
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">

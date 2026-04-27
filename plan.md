@@ -122,8 +122,8 @@ Pure functions only. Every function gets a table-driven test file with worked ex
 
 ## Phase 5 — Score entry UI
 
-- [ ] Group discovery: `/games/:id` auto-detects user's group; "switch group" button lists others
-- [ ] Score entry screen (`/games/:id/groups/:groupId/score`):
+- [x] Group discovery: `/games/:id` auto-detects user's group; "switch group" button lists others
+- [x] Score entry screen (`/games/:id/groups/:groupId/score`):
   - Per-hole layout with embla carousel for swipe
   - Default to first hole with a missing score (or hole 1)
   - Each player row: name, par-relative indicator, `−` / strokes / `+` steppers
@@ -131,9 +131,9 @@ Pure functions only. Every function gets a table-driven test file with worked ex
   - Stroke-receiving dot next to player name on holes where they get a stroke
   - Sub-2× par non-blocking warning
   - Auto-advance to next hole when all members entered, with undo toast
-- [ ] Read-only mode when viewing a group you're not a member of
-- [ ] Lock score editing when `Game.status === COMPLETE`
-- [ ] Score write endpoint: PUT `{ gameEntryId, holeNumber, strokes }` — idempotent, LWW
+- [x] Read-only mode when viewing a group you're not a member of
+- [x] Lock score editing when `Game.status === COMPLETE`
+- [x] Score write endpoint: PUT `{ gameEntryId, holeNumber, strokes }` — idempotent, LWW
 
 **Done when:** a group can complete a full 18-hole round on real phones, with all scores persisted.
 
