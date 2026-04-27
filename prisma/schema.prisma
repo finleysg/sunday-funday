@@ -84,6 +84,8 @@ model Player {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  entries GameEntry[]
+
   @@map("player")
 }
 
@@ -96,6 +98,7 @@ model Course {
 
   holes CourseHole[]
   tees  Tee[]
+  games Game[]
 
   @@map("course")
 }
@@ -120,8 +123,9 @@ model Tee {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  holes  TeeHole[]
+  course  Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  holes   TeeHole[]
+  entries GameEntry[]
 
   @@unique([courseId, name])
   @@index([courseId])
@@ -136,4 +140,108 @@ model TeeHole {
 
   @@id([teeId, holeNumber])
   @@map("tee_hole")
+}
+
+enum GameFormat {
+  STROKE
+  STABLEFORD
+  CHICAGO_39
+}
+
+enum SkinsType {
+  NONE
+  NET
+  HALF_SHOT
+}
+
+enum GameStatus {
+  SETUP
+  IN_PROGRESS
+  COMPLETE
+}
+
+model Game {
+  id        String     @id @default(cuid())
+  name      String
+  date      DateTime
+  courseId  String
+  format    GameFormat
+  skinsType SkinsType  @default(NONE)
+  status    GameStatus @default(SETUP)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  course  Course      @relation(fields: [courseId], references: [id])
+  entries GameEntry[]
+  groups  Group[]
+
+  @@index([courseId])
+  @@index([status, date])
+  @@map("game")
+}
+
+model GameEntry {
+  id             String   @id @default(cuid())
+  gameId         String
+  playerId       String
+  teeId          String
+  courseHandicap Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  game   Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player       @relation(fields: [playerId], references: [id])
+  tee    Tee          @relation(fields: [teeId], references: [id])
+  member GroupMember?
+  scores Score[]
+
+  @@unique([gameId, playerId])
+  @@index([gameId])
+  @@index([playerId])
+  @@index([teeId])
+  @@map("game_entry")
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  gameId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game    Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  members GroupMember[]
+
+  @@index([gameId])
+  @@map("group")
+}
+
+model GroupMember {
+  groupId     String
+  gameEntryId String   @unique
+  createdAt   DateTime @default(now())
+
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  gameEntry GameEntry @relation(fields: [gameEntryId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, gameEntryId])
+  @@index([groupId])
+  @@map("group_member")
+}
+
+model Score {
+  id              String    @id @default(cuid())
+  gameEntryId     String
+  holeNumber      Int
+  strokes         Int?
+  enteredByUserId String?
+  enteredAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  gameEntry GameEntry @relation(fields: [gameEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([gameEntryId, holeNumber])
+  @@index([gameEntryId])
+  @@map("score")
 }

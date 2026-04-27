@@ -1,25 +1,24 @@
-import { isAdmin } from "@/lib/admin";
+import { redirect } from "next/navigation";
+
+import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 
-export default async function HomePage() {
-  const session = await requireSession();
-  const admin = isAdmin(session.user.email);
+import { endOfLocalDay, startOfLocalDay } from "./games/_utils";
 
-  return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-bold">Welcome, {session.user.name}.</h1>
-      <p className="text-muted-foreground mt-2 text-sm">
-        Phase 1 is live: identity. Games, scoring, and leaderboards land in the next phases.
-      </p>
-      {admin ? (
-        <p className="mt-4 text-sm">
-          You&apos;re an admin. Head to{" "}
-          <a className="underline" href="/roster">
-            Roster
-          </a>{" "}
-          to add players.
-        </p>
-      ) : null}
-    </div>
-  );
+export default async function HomePage() {
+  await requireSession();
+  const now = new Date();
+
+  const todayInProgress = await prisma.game.findMany({
+    where: {
+      status: "IN_PROGRESS",
+      date: { gte: startOfLocalDay(now), lte: endOfLocalDay(now) },
+    },
+    select: { id: true },
+    take: 2,
+  });
+  if (todayInProgress.length === 1) {
+    redirect(`/games/${todayInProgress[0]!.id}`);
+  }
+  redirect("/games");
 }

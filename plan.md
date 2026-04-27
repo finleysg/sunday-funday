@@ -78,24 +78,24 @@ No user-facing features yet. The goal is a green CI pipeline producing a deploya
 
 ## Phase 3 — Game setup
 
-- [ ] Add `Game`, `GameEntry`, `Group`, `GroupMember` tables; migrate
-- [ ] Game list page (`app/(app)/games`) — sorted by date desc; today's `IN_PROGRESS` pinned at top
-- [ ] Create game form (`/games/new`): name, date, course, format, skinsType — status starts `SETUP`
-- [ ] Game detail / edit screen — header info, roster section, groups section
-- [ ] Roster builder:
+- [x] Add `Game`, `GameEntry`, `Group`, `GroupMember` tables; migrate (also added `Score` and the `GameFormat` / `SkinsType` / `GameStatus` enums; wired `isCourseLocked` to query `Game.status === COMPLETE`)
+- [x] Game list page (`app/(app)/games`) — sorted by date desc; today's `IN_PROGRESS` pinned at top
+- [x] Create game form (`/games/new`): name, date, course, format, skinsType — status starts `SETUP`
+- [x] Game detail / edit screen — header info, roster section, groups section
+- [x] Roster builder:
   - Active player checkboxes
   - "Add players from last game at this course" bulk action
   - Per-player tee selector (default to last-used at this course) + course handicap input
   - Save creates `GameEntry` rows
-- [ ] Group builder:
+- [x] Group builder:
   - "Unassigned players" list
   - "Group N" cards
   - Tap-to-select → tap-to-assign UI
   - Soft warning if group has more than 5
   - Allow rearrangement at any status; confirmation prompt if scores already exist
-- [ ] `SETUP → IN_PROGRESS` transition button (admin or any authed user — TBD; default to admin)
+- [x] `SETUP → IN_PROGRESS` transition button (admin only)
   - On transition, pre-create `Score` rows for all entries × 18 holes
-- [ ] Game discovery: home page auto-redirects to today's `IN_PROGRESS` if exactly one exists; otherwise shows games list
+- [x] Game discovery: home page auto-redirects to today's `IN_PROGRESS` if exactly one exists; otherwise shows games list
 
 **Done when:** an admin can create a game, fill the roster, build groups, and transition to `IN_PROGRESS`.
 
