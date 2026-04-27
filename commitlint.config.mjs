@@ -1,0 +1,36 @@
+export default {
+  extends: ["@commitlint/config-conventional"],
+  ignores: [(commit) => /^Merge /.test(commit)],
+  rules: {
+    "type-enum": [
+      2,
+      "always",
+      ["feat", "fix", "docs", "style", "refactor", "perf", "test", "ci", "chore", "revert"],
+    ],
+    "scope-enum": [
+      1,
+      "always",
+      [
+        "auth",
+        "roster",
+        "courses",
+        "games",
+        "groups",
+        "scoring",
+        "score-entry",
+        "leaderboard",
+        "side-bets",
+        "export",
+        "pwa",
+        "ui",
+        "db",
+        "infra",
+        "ci",
+        "deps",
+      ],
+    ],
+    "scope-empty": [0],
+    "body-max-line-length": [0],
+    "footer-max-line-length": [0],
+  },
+};

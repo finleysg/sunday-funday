@@ -1,0 +1,32 @@
+name: sunday-funday
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: sunday-funday-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sunday_funday
+      MYSQL_USER: sunday_funday
+      MYSQL_PASSWORD: sunday_funday
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sunday-funday-mailpit
+    restart: unless-stopped
+    ports:
+      - "1029:1025"
+      - "8029:8025"
+
+volumes:
+  mysql_data:
