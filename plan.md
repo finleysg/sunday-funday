@@ -34,17 +34,17 @@ No user-facing features yet. The goal is a green CI pipeline producing a deploya
 
 ## Phase 1 — Identity
 
-- [ ] Install better-auth + Prisma adapter + magic-link plugin
-- [ ] Generate better-auth tables in Prisma schema (`user`, `session`, `account`, `verification`)
-- [ ] Add `Player` table (id, name, email unique, active) — link 1:1 to better-auth `user` by email on first sign-in
-- [ ] Configure Resend in dev (Mailpit) and prod (real SMTP); abstract via `EMAIL_PROVIDER` env or single config
-- [ ] Wire `sendMagicLink` callback: reject silently if email not in `Player` table
-- [ ] Sign-in page (`app/(auth)/sign-in/page.tsx`): email input → magic link sent confirmation
-- [ ] Magic link email template via react-email
-- [ ] Session middleware; admin guard derived from `ADMIN_EMAILS` env var
-- [ ] Sign-out flow
-- [ ] `app/(app)` layout shell with bottom nav (placeholder links)
-- [ ] Admin roster page (`app/(app)/roster`):
+- [x] Install better-auth + Prisma adapter + magic-link plugin
+- [x] Generate better-auth tables in Prisma schema (`user`, `session`, `account`, `verification`)
+- [x] Add `Player` table (id, name, email unique, active) — link 1:1 to better-auth `user` by email on first sign-in
+- [x] Configure Resend in dev (Mailpit) and prod (real SMTP); abstract via `EMAIL_PROVIDER` env or single config
+- [x] Wire `sendMagicLink` callback: reject silently if email not in `Player` table
+- [x] Sign-in page (`app/(auth)/sign-in/page.tsx`): email input → magic link sent confirmation
+- [x] Magic link email template via react-email
+- [x] Session middleware; admin guard derived from `ADMIN_EMAILS` env var
+- [x] Sign-out flow
+- [x] `app/(app)` layout shell with bottom nav (placeholder links)
+- [x] Admin roster page (`app/(app)/roster`):
   - List players (active + inactive)
   - Add player (name + email)
   - Edit / deactivate player
