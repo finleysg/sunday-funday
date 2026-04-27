@@ -105,16 +105,16 @@ No user-facing features yet. The goal is a green CI pipeline producing a deploya
 
 Pure functions only. Every function gets a table-driven test file with worked examples.
 
-- [ ] `lib/scoring/strokes.ts` — `strokesOnHole(courseHandicap, strokeIndex)`
+- [x] `lib/scoring/strokes.ts` — `strokesOnHole(courseHandicap, strokeIndex)`
   - Test cases: H=18 (1 on every hole), H=22 (1 on all + 1 on SI 1–4), H=9 (1 on SI 1–9), H=0 (none), H=-2 (gives strokes on SI 17/18)
-- [ ] `lib/scoring/match-play.ts` — `matchPlayStrokesOnHole(higherHcp, lowerHcp, higherPlayerSI)`
+- [x] `lib/scoring/match-play.ts` — `matchPlayStrokesOnHole(higherHcp, lowerHcp, higherPlayerSI)`
   - Test cases: 3 vs 10 → 7 shots distributed by 10's tee SI; equal hcps → 0 shots; plus vs +N
-- [ ] `lib/scoring/stroke.ts` — round total (sum net)
-- [ ] `lib/scoring/stableford.ts` — per-hole points (4/3/2/1/0) + round total
-- [ ] `lib/scoring/chicago.ts` — quota = 39 − H, gross-based hole points (1/2/4/8/16), round total = sum − quota
-- [ ] `lib/scoring/skins-net.ts` — per-hole resolver: lowest unique net wins; ties → null (skin dead)
-- [ ] `lib/scoring/skins-half-shot.ts` — per-hole resolver: lowest unique net wins; on tie, gross birdie/eagle beats net birdie/eagle (lower gross among tied wins); remaining ties → null
-- [ ] `lib/scoring/nassau.ts` — given two players' scores, returns `{ front: MatchResult, back: MatchResult, total: MatchResult }` where `MatchResult` describes "X up", "X up Y to play", "halved", "A wins N&M"
+- [x] `lib/scoring/stroke.ts` — round total (sum net)
+- [x] `lib/scoring/stableford.ts` — per-hole points (4/3/2/1/0) + round total
+- [x] `lib/scoring/chicago.ts` — quota = 39 − H, gross-based hole points (1/2/4/8/16), round total = sum − quota
+- [x] `lib/scoring/skins-net.ts` — per-hole resolver: lowest unique net wins; ties → null (skin dead)
+- [x] `lib/scoring/skins-half-shot.ts` — per-hole resolver: lowest unique net wins; on tie, gross birdie/eagle beats net birdie/eagle (lower gross among tied wins); remaining ties → null
+- [x] `lib/scoring/nassau.ts` — given two players' scores, returns `{ front: MatchResult, back: MatchResult, total: MatchResult }` where `MatchResult` describes "X up", "X up Y to play", "halved", "A wins N&M"
 
 **Done when:** all scoring math has comprehensive unit-test coverage and zero UI integration.
 
