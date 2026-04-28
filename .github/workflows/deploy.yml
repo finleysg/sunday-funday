@@ -60,13 +60,9 @@ jobs:
     steps:
       - name: Trigger CapRover deploy
         env:
-          CAPROVER_URL: ${{ secrets.CAPROVER_URL }}
-          CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
-          CAPROVER_APP: ${{ secrets.CAPROVER_APP }}
+          CAPROVER_APP_TOKEN: ${{ secrets.CAPROVER_TOKEN_SF }}
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
         run: |
           npx -y caprover-cli deploy \
-            --caproverUrl "$CAPROVER_URL" \
-            --caproverPassword "$CAPROVER_PASSWORD" \
-            --caproverApp "$CAPROVER_APP" \
+            --appToken "$CAPROVER_APP_TOKEN" \
             --imageName "${IMAGE_TAG%%$'\n'*}"
