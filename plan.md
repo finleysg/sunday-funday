@@ -173,16 +173,16 @@ Pure functions only. Every function gets a table-driven test file with worked ex
 
 ## Phase 8 — Side bets, export, lifecycle close
 
-- [ ] Side bet modal (triggered from leaderboard):
+- [x] Side bet modal (triggered from leaderboard):
   - Tap player A → highlight, prompt "compare with…"
   - Tap player B → modal opens with Front/Back/Total Nassau result
-  - Modal computes via `lib/scoring/nassau.ts` from current `Score` rows
-- [ ] Excel export endpoint: `GET /api/games/:id/export.xlsx`
+  - Modal computes via `lib/scoring/nassau.ts` from current `Score` rows (server endpoint `GET /api/games/:id/nassau?a=…&b=…` runs the math against live `Score` rows)
+- [x] Excel export endpoint: `GET /api/games/:id/export.xlsx`
   - Sheets: Summary, Gross Scorecard, Net Scorecard, Skins (conditional)
   - Header on Summary: game name, date, course, format, skins type
-- [ ] Export button on game detail / leaderboard
-- [ ] `IN_PROGRESS → COMPLETE` transition button (any authed user; locks scoring)
-- [ ] Admin-only "reopen" button on `COMPLETE` games (flips back to `IN_PROGRESS`)
+- [x] Export button on game detail / leaderboard
+- [x] `IN_PROGRESS → COMPLETE` transition button (any authed user; locks scoring)
+- [x] Admin-only "reopen" button on `COMPLETE` games (flips back to `IN_PROGRESS`)
 
 **Done when:** a completed game can be locked, exported to Excel, and any pair of players can have their Nassau computed from the leaderboard.
 

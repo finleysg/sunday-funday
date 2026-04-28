@@ -2,13 +2,14 @@
 
 import { ListChecksIcon, RefreshCwIcon } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { LeaderboardResult } from "@/lib/leaderboard/compute";
 import { cn } from "@/lib/utils";
 
 import { formatFormat, formatGameDate, formatSkins } from "../../../_utils";
+import { NassauModal, type NassauResponse } from "./nassau-modal";
 
 const POLL_INTERVAL_MS = 15_000;
 
@@ -88,6 +89,55 @@ export function LeaderboardClient({
   const showSkins = leaderboard.skinsType !== "NONE";
   const primaryHeader = primaryHeaderForFormat(game.format);
 
+  // Side-bet (Nassau) selection: tap row A → highlight; tap row B → modal.
+  // Tapping the same row twice cancels. Fetch is fired from the click handler
+  // (not an effect) — React's docs explicitly recommend event handlers over
+  // effects for user-initiated network calls.
+  const [selectedAId, setSelectedAId] = useState<string | null>(null);
+  const [nassauOpen, setNassauOpen] = useState(false);
+  const [nassauLoading, setNassauLoading] = useState(false);
+  const [nassauError, setNassauError] = useState<string | null>(null);
+  const [nassauData, setNassauData] = useState<NassauResponse | null>(null);
+  const nassauRequestId = useRef(0);
+  const selectedAName = useMemo(
+    () => leaderboard.rows.find((r) => r.gameEntryId === selectedAId)?.playerName ?? null,
+    [leaderboard.rows, selectedAId],
+  );
+  const onRowSelect = useCallback(
+    async (entryId: string) => {
+      if (selectedAId === null) {
+        setSelectedAId(entryId);
+        return;
+      }
+      if (selectedAId === entryId) {
+        setSelectedAId(null);
+        return;
+      }
+      const a = selectedAId;
+      const b = entryId;
+      const id = ++nassauRequestId.current;
+      setNassauOpen(true);
+      setNassauLoading(true);
+      setNassauError(null);
+      setNassauData(null);
+      try {
+        const res = await fetch(`/api/games/${gameId}/nassau?a=${a}&b=${b}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as NassauResponse;
+        if (id === nassauRequestId.current) setNassauData(json);
+      } catch (err) {
+        if (id === nassauRequestId.current) {
+          setNassauError(err instanceof Error ? err.message : "Failed to load");
+        }
+      } finally {
+        if (id === nassauRequestId.current) setNassauLoading(false);
+      }
+    },
+    [gameId, selectedAId],
+  );
+
   return (
     <>
       <header className="space-y-2 rounded-lg border bg-white p-4">
@@ -101,16 +151,25 @@ export function LeaderboardClient({
               {formatFormat(game.format)} · {formatSkins(game.skinsType)}
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refetch}
-            disabled={refreshing}
-            aria-label="Refresh leaderboard"
-          >
-            <RefreshCwIcon className={cn(refreshing && "animate-spin")} />
-            {refreshing ? "…" : "Refresh"}
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetch}
+              disabled={refreshing}
+              aria-label="Refresh leaderboard"
+            >
+              <RefreshCwIcon className={cn(refreshing && "animate-spin")} />
+              {refreshing ? "…" : "Refresh"}
+            </Button>
+            {game.status !== "SETUP" ? (
+              <Button asChild variant="ghost" size="sm">
+                <a href={`/api/games/${gameId}/export.xlsx`} download>
+                  Export Excel
+                </a>
+              </Button>
+            ) : null}
+          </div>
         </div>
         {userGroupId ? (
           <div>
@@ -125,7 +184,20 @@ export function LeaderboardClient({
       </header>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium">Standings</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-medium">Standings</h2>
+          {selectedAId ? (
+            <p className="text-xs text-amber-900">
+              Comparing with <span className="font-medium">{selectedAName}</span> — tap another
+              player.{" "}
+              <button type="button" className="underline" onClick={() => setSelectedAId(null)}>
+                Cancel
+              </button>
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-xs">Tap two players to compare (Nassau)</p>
+          )}
+        </div>
         <div className="overflow-hidden rounded-lg border bg-white">
           <table className="w-full text-sm">
             <thead className="text-muted-foreground bg-muted/40 text-xs">
@@ -146,11 +218,18 @@ export function LeaderboardClient({
               ) : (
                 leaderboard.rows.map((row) => {
                   const isMe = row.gameEntryId === userEntryId;
+                  const isSelected = row.gameEntryId === selectedAId;
                   return (
                     <tr
                       key={row.gameEntryId}
-                      className={cn(isMe && "bg-primary/5")}
+                      className={cn(
+                        "hover:bg-muted/40 cursor-pointer",
+                        isMe && "bg-primary/5",
+                        isSelected && "bg-amber-50 ring-1 ring-amber-300",
+                      )}
                       aria-current={isMe ? "true" : undefined}
+                      aria-selected={isSelected}
+                      onClick={() => onRowSelect(row.gameEntryId)}
                     >
                       <td className="px-3 py-2 font-medium tabular-nums">{row.rank}</td>
                       <td className="px-3 py-2">
@@ -178,6 +257,21 @@ export function LeaderboardClient({
           </table>
         </div>
       </section>
+
+      <NassauModal
+        open={nassauOpen}
+        loading={nassauLoading}
+        error={nassauError}
+        data={nassauData}
+        onOpenChange={(o) => {
+          if (!o) {
+            setNassauOpen(false);
+            setSelectedAId(null);
+            setNassauData(null);
+            setNassauError(null);
+          }
+        }}
+      />
 
       {showSkins ? (
         <section className="space-y-2">

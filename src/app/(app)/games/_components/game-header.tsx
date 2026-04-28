@@ -52,6 +52,13 @@ export function GameHeader({ game, admin }: { game: GameSummary; admin: boolean 
         <StatusBadge status={game.status} />
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
+        {game.status !== "SETUP" ? (
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/games/${game.id}/export.xlsx`} download>
+              Export Excel
+            </a>
+          </Button>
+        ) : null}
         {game.status === "IN_PROGRESS" ? (
           <Button variant="outline" size="sm" onClick={complete} disabled={pending}>
             {pending ? "…" : "Mark complete"}
