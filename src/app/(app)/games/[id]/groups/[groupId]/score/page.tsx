@@ -82,7 +82,15 @@ export default async function ScoreEntryPage({ params }: { params: Params }) {
         <Link href={`/games/${gameId}`} className="text-muted-foreground text-sm underline">
           ← {game.name}
         </Link>
-        <span className="text-muted-foreground text-xs">{group.name}</span>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/games/${gameId}/leaderboard`}
+            className="text-muted-foreground text-xs underline"
+          >
+            Leaderboard
+          </Link>
+          <span className="text-muted-foreground text-xs">{group.name}</span>
+        </div>
       </div>
 
       {!canEdit && game.status === "IN_PROGRESS" && !userIsMember ? (

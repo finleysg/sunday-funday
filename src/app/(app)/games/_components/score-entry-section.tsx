@@ -36,7 +36,15 @@ export function ScoreEntrySection({
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-medium">Score entry</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-medium">Score entry</h2>
+        <Link
+          href={`/games/${gameId}/leaderboard`}
+          className="text-muted-foreground text-xs underline"
+        >
+          View leaderboard →
+        </Link>
+      </div>
       {ownGroup ? (
         <Link
           href={`/games/${gameId}/groups/${ownGroup.id}/score`}

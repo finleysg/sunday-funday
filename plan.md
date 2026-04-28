@@ -157,15 +157,15 @@ Pure functions only. Every function gets a table-driven test file with worked ex
 
 ## Phase 7 — Leaderboard
 
-- [ ] Leaderboard endpoint: `GET /api/games/:id/leaderboard` returns format-specific computed standings + skins (if enabled)
-- [ ] Leaderboard page (`/games/:id/leaderboard`):
+- [x] Leaderboard endpoint: `GET /api/games/:id/leaderboard` returns format-specific computed standings + skins (if enabled)
+- [x] Leaderboard page (`/games/:id/leaderboard`):
   - Header: game name, date, course, format
   - Primary format section: rank, name, format-specific score, "thru"
   - Skins section (when enabled): name, skins won
   - Current user's row highlighted
-- [ ] 15s polling via TanStack Query, paused on `document.hidden`
-- [ ] Pull-to-refresh
-- [ ] Toggle between leaderboard ↔ score entry (the "easy toggle" called out in the overview)
+- [x] 15s polling via TanStack Query, paused on `document.hidden` *(implemented with native `setInterval` + visibilitychange — TanStack Query not yet wired since we don't have a QueryClientProvider; the behavior matches the spec)*
+- [x] Pull-to-refresh *(native browser PTR via standalone PWA; manual `Refresh` button in the header for desktop / non-standalone use)*
+- [x] Toggle between leaderboard ↔ score entry (the "easy toggle" called out in the overview)
 
 **Done when:** all players can see live standings; the leaderboard updates within 15 seconds of any score change.
 
