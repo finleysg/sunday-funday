@@ -25,6 +25,15 @@ RUN pnpm exec prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
+# ---- prisma-cli ----
+# Self-contained Prisma CLI install (npm, flat node_modules) so @prisma/engines
+# resolves at runtime. Avoids pnpm's symlink layout, which Docker COPY breaks.
+FROM node:24-alpine AS prisma-cli
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /prisma-cli
+RUN echo '{"name":"prisma-cli","version":"0.0.0","private":true}' > package.json \
+  && npm install --no-audit --no-fund prisma@7.8.0
+
 # ---- runner ----
 FROM node:24-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl
@@ -42,13 +51,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Prisma CLI + migration files needed at startup.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm ./node_modules/.pnpm
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+# Prisma CLI for migrations — self-contained, isolated from the standalone
+# bundle's node_modules.
+COPY --from=prisma-cli --chown=nextjs:nodejs /prisma-cli /prisma-cli
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 USER nextjs
 EXPOSE 3000
@@ -56,4 +62,4 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 # Run migrations before starting the server. Single-replica deploy → no race.
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
+CMD ["sh", "-c", "node /prisma-cli/node_modules/prisma/build/index.js migrate deploy --schema=/app/prisma/schema.prisma && node server.js"]
