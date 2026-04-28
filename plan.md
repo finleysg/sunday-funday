@@ -141,15 +141,15 @@ Pure functions only. Every function gets a table-driven test file with worked ex
 
 ## Phase 6 — PWA & offline
 
-- [ ] `manifest.json` (name, short_name, theme_color, icons 192/512)
-- [ ] Generate icon set from source PNG via `pwa-asset-generator`
-- [ ] Service worker setup (Workbox via Next 16-compatible plugin or hand-rolled)
-- [ ] `BackgroundSyncPlugin` for score-write PUT requests — queue in IndexedDB on failure, replay on reconnect
-- [ ] Pending-sync indicator (badge in header) showing count of queued writes
-- [ ] Manual "sync now" button (iOS Safari fallback — background sync unsupported)
-- [ ] Test on real iOS device via Portless: install to home screen, go offline, score a hole, come online, verify replay
-- [ ] Test on real Android device similarly
-- [ ] `NEXT_PUBLIC_ENABLE_SW=true` to enable in dev when needed; otherwise off
+- [x] `manifest.json` (name, short_name, theme_color, icons 192/512)
+- [ ] Generate icon set from source PNG via `pwa-asset-generator` *(deferred — placeholder SVG icons in place; needs branded source PNG to finalize)*
+- [x] Service worker setup (Workbox via Next 16-compatible plugin or hand-rolled) — hand-rolled `public/sw.js`
+- [x] `BackgroundSyncPlugin` for score-write PUT requests — queue in IndexedDB on failure, replay on reconnect
+- [x] Pending-sync indicator (badge in header) showing count of queued writes
+- [x] Manual "sync now" button (iOS Safari fallback — background sync unsupported)
+- [ ] Test on real iOS device via Portless: install to home screen, go offline, score a hole, come online, verify replay *(deferred — needs phone)*
+- [ ] Test on real Android device similarly *(deferred — needs phone)*
+- [x] `NEXT_PUBLIC_ENABLE_SW=true` to enable in dev when needed; otherwise off
 
 **Done when:** scores entered offline survive an airplane-mode round and replay correctly when service returns, on both iOS (with manual sync if needed) and Android.
 

@@ -20,6 +20,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sunday Fun Day",
   description: "A small, focused scoring app for one friend group's Sunday rounds.",
+  applicationName: "Sunday Fun Day",
+  appleWebApp: {
+    capable: true,
+    title: "SunFunDay",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon.svg",
+  },
+};
+
+export const viewport = {
+  themeColor: "#1f7d8a",
 };
 
 export default function RootLayout({
