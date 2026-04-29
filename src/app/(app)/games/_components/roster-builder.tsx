@@ -88,13 +88,16 @@ export function RosterBuilder({
       setError("This course has no active tees");
       return;
     }
-    const payload = rows
-      .filter((r) => r.selected)
-      .map((r) => ({
-        playerId: r.playerId,
-        teeId: r.teeId,
-        courseHandicap: Number(r.courseHandicap),
-      }));
+    const selected = rows.filter((r) => r.selected);
+    if (selected.some((r) => !Number.isFinite(r.courseHandicap))) {
+      setError("Enter a course handicap for each selected player");
+      return;
+    }
+    const payload = selected.map((r) => ({
+      playerId: r.playerId,
+      teeId: r.teeId,
+      courseHandicap: Number(r.courseHandicap),
+    }));
     startTransition(async () => {
       const r = await saveRosterAction(gameId, payload);
       if (r.ok) {
@@ -187,8 +190,12 @@ export function RosterBuilder({
                   inputMode="numeric"
                   min={-10}
                   max={54}
-                  value={row.courseHandicap}
-                  onChange={(e) => update(p.id, { courseHandicap: Number(e.target.value) })}
+                  value={Number.isFinite(row.courseHandicap) ? row.courseHandicap : ""}
+                  onChange={(e) =>
+                    update(p.id, {
+                      courseHandicap: e.target.value === "" ? Number.NaN : Number(e.target.value),
+                    })
+                  }
                   disabled={!row.selected}
                   className="h-9 w-20 text-center"
                   aria-label={`Course handicap for ${p.name}`}
