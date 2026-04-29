@@ -3,12 +3,9 @@ import { notFound } from "next/navigation";
 
 import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
-import { lastUsedTeeForPlayers } from "@/lib/games/last-used-tee";
 import { requireSession } from "@/lib/session";
 
 import { GameHeader } from "../_components/game-header";
-import { GroupBuilder } from "../_components/group-builder";
-import { RosterBuilder } from "../_components/roster-builder";
 import { ScoreEntrySection } from "../_components/score-entry-section";
 import { StartGameButton } from "../_components/start-game-button";
 
@@ -22,23 +19,13 @@ export default async function GameDetailPage({ params }: { params: Params }) {
   const game = await prisma.game.findUnique({
     where: { id },
     include: {
-      course: {
-        include: {
-          tees: {
-            where: { active: true },
-            orderBy: { name: "asc" },
-            select: { id: true, name: true, rating: true, slope: true },
-          },
-          holes: { select: { par: true } },
-        },
-      },
+      course: { select: { name: true } },
       entries: {
-        include: {
+        select: {
+          id: true,
           player: { select: { id: true, name: true, email: true } },
-          tee: { select: { id: true, name: true } },
           member: { select: { groupId: true } },
         },
-        orderBy: { player: { name: "asc" } },
       },
       groups: {
         orderBy: { createdAt: "asc" },
@@ -46,10 +33,7 @@ export default async function GameDetailPage({ params }: { params: Params }) {
           members: {
             include: {
               gameEntry: {
-                include: {
-                  player: { select: { id: true, name: true } },
-                  tee: { select: { name: true } },
-                },
+                include: { player: { select: { name: true } } },
               },
             },
           },
@@ -59,34 +43,12 @@ export default async function GameDetailPage({ params }: { params: Params }) {
   });
   if (!game) notFound();
 
-  const playersRaw = await prisma.player.findMany({
-    where: { active: true },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true, handicapIndex: true },
-  });
-  const players = playersRaw.map((p) => ({
-    ...p,
-    handicapIndex: p.handicapIndex == null ? null : Number(p.handicapIndex),
-  }));
-  const coursePar = game.course.holes.reduce((sum, h) => sum + h.par, 0);
-
-  const lastUsed = await lastUsedTeeForPlayers(
-    game.courseId,
-    players.map((p) => p.id),
-    game.id,
-  );
-
-  const lastUsedSerialized: Record<string, { teeId: string; courseHandicap: number }> = {};
-  for (const [k, v] of lastUsed.entries()) lastUsedSerialized[k] = v;
-
-  const editable = admin && game.status === "SETUP";
-
-  // Locate the signed-in user's group within this game (if any). Used by
-  // the score-entry section to highlight their own group with a primary
-  // CTA and route the others to read-only mode.
   const userEmail = session.user.email.toLowerCase();
   const userEntry = game.entries.find((e) => e.player.email.toLowerCase() === userEmail);
   const userGroupId = userEntry?.member?.groupId ?? null;
+
+  const unassignedCount = game.entries.filter((e) => !e.member).length;
+  const setupAndAdmin = admin && game.status === "SETUP";
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
@@ -124,58 +86,66 @@ export default async function GameDetailPage({ params }: { params: Params }) {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Roster ({game.entries.length})</h2>
-          {game.status === "SETUP" && admin ? (
+          <h2 className="text-sm font-medium">Setup</h2>
+          {setupAndAdmin ? (
             <StartGameButton gameId={game.id} disabled={game.entries.length === 0} />
           ) : null}
         </div>
-        <RosterBuilder
-          gameId={game.id}
-          editable={editable}
-          coursePar={coursePar}
-          allPlayers={players}
-          tees={game.course.tees.map((t) => ({
-            id: t.id,
-            name: t.name,
-            rating: Number(t.rating),
-            slope: t.slope,
-          }))}
-          entries={game.entries.map((e) => ({
-            playerId: e.player.id,
-            playerName: e.player.name,
-            playerEmail: e.player.email,
-            teeId: e.tee.id,
-            teeName: e.tee.name,
-            courseHandicap: e.courseHandicap,
-          }))}
-          lastUsed={lastUsedSerialized}
-        />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium">Groups</h2>
-        <GroupBuilder
-          gameId={game.id}
-          status={game.status}
-          admin={admin}
-          unassigned={game.entries
-            .filter((e) => !e.member)
-            .map((e) => ({
-              gameEntryId: e.id,
-              playerName: e.player.name,
-              teeName: e.tee.name,
-            }))}
-          groups={game.groups.map((g) => ({
-            id: g.id,
-            name: g.name,
-            members: g.members.map((m) => ({
-              gameEntryId: m.gameEntryId,
-              playerName: m.gameEntry.player.name,
-              teeName: m.gameEntry.tee.name,
-            })),
-          }))}
-        />
+        <ul className="grid gap-3 sm:grid-cols-2">
+          <SetupStepCard
+            href={`/games/${game.id}/roster`}
+            title="Roster"
+            primary={`${game.entries.length} ${game.entries.length === 1 ? "player" : "players"}`}
+            hint={
+              setupAndAdmin
+                ? game.entries.length === 0
+                  ? "Add players to get started."
+                  : "Edit who's playing and which tees they're using."
+                : "View who's playing and their tees."
+            }
+          />
+          <SetupStepCard
+            href={`/games/${game.id}/groups`}
+            title="Groups"
+            primary={`${game.groups.length} ${game.groups.length === 1 ? "group" : "groups"}`}
+            hint={
+              game.entries.length === 0
+                ? "Add a roster first."
+                : unassignedCount > 0
+                  ? `${unassignedCount} ${unassignedCount === 1 ? "player" : "players"} still unassigned.`
+                  : "All players assigned."
+            }
+          />
+        </ul>
       </section>
     </div>
+  );
+}
+
+function SetupStepCard({
+  href,
+  title,
+  primary,
+  hint,
+}: {
+  href: string;
+  title: string;
+  primary: string;
+  hint: string;
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="hover:bg-muted block space-y-1 rounded-lg border bg-white p-4 transition-colors"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">{title}</h3>
+          <span className="text-muted-foreground text-xs">→</span>
+        </div>
+        <p className="text-base font-semibold">{primary}</p>
+        <p className="text-muted-foreground text-xs">{hint}</p>
+      </Link>
+    </li>
   );
 }

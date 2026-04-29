@@ -5,8 +5,8 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { computeCourseHandicap } from "@/lib/scoring/course-handicap";
 
 import { copyRosterFromLastGameAction, saveRosterAction } from "../actions";
@@ -193,51 +193,52 @@ export function RosterBuilder({
           allPlayers.map((p) => {
             const row = rows.find((r) => r.playerId === p.id)!;
             return (
-              <li
-                key={p.id}
-                className="grid items-center gap-2 p-3 sm:grid-cols-[auto_1fr_auto_auto]"
-              >
-                <Checkbox
-                  checked={row.selected}
-                  onCheckedChange={(c) => update(p.id, { selected: c === true })}
-                  aria-label={`Include ${p.name}`}
-                />
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{p.name}</div>
-                  <div className="text-muted-foreground truncate text-xs">{p.email}</div>
+              <li key={p.id} className="space-y-2 p-3">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={row.selected}
+                    onCheckedChange={(c) => update(p.id, { selected: c === true })}
+                    aria-label={`Include ${p.name}`}
+                  />
+                  <div className="min-w-0 flex-1 truncate font-medium">{p.name}</div>
+                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                    {p.handicapIndex != null ? `HI ${formatIndex(p.handicapIndex)}` : "HI —"}
+                  </span>
                 </div>
-                <select
-                  value={row.teeId}
-                  onChange={(e) => changeTee(p, e.target.value)}
-                  disabled={!row.selected || tees.length === 0}
-                  className="border-input bg-background h-9 rounded-md border px-2 text-sm disabled:opacity-50"
-                  aria-label={`Tee for ${p.name}`}
-                >
-                  {tees.length === 0 ? (
-                    <option value="">No tees</option>
-                  ) : (
-                    tees.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({t.rating}/{t.slope})
-                      </option>
-                    ))
-                  )}
-                </select>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  min={-10}
-                  max={54}
-                  value={Number.isFinite(row.courseHandicap) ? row.courseHandicap : ""}
-                  onChange={(e) =>
-                    update(p.id, {
-                      courseHandicap: e.target.value === "" ? Number.NaN : Number(e.target.value),
-                    })
-                  }
-                  disabled={!row.selected}
-                  className="h-9 w-20 text-center"
-                  aria-label={`Course handicap for ${p.name}`}
-                />
+                <div className="flex items-center gap-2 pl-12">
+                  <select
+                    value={row.teeId}
+                    onChange={(e) => changeTee(p, e.target.value)}
+                    disabled={!row.selected || tees.length === 0}
+                    className="border-input bg-background h-9 flex-1 rounded-md border px-2 text-sm disabled:opacity-50"
+                    aria-label={`Tee for ${p.name}`}
+                  >
+                    {tees.length === 0 ? (
+                      <option value="">No tees</option>
+                    ) : (
+                      tees.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name} ({t.rating}/{t.slope})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={-10}
+                    max={54}
+                    value={Number.isFinite(row.courseHandicap) ? row.courseHandicap : ""}
+                    onChange={(e) =>
+                      update(p.id, {
+                        courseHandicap: e.target.value === "" ? Number.NaN : Number(e.target.value),
+                      })
+                    }
+                    disabled={!row.selected}
+                    className="h-9 w-20 text-center"
+                    aria-label={`Course handicap for ${p.name}`}
+                  />
+                </div>
               </li>
             );
           })
@@ -266,6 +267,10 @@ function ReadOnlyRoster({ entries, emptyHint }: { entries: Entry[]; emptyHint: s
       )}
     </ul>
   );
+}
+
+function formatIndex(hi: number): string {
+  return hi < 0 ? `+${(-hi).toFixed(1)}` : hi.toFixed(1);
 }
 
 function sameRoster(a: Row[], b: Row[]): boolean {

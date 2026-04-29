@@ -26,19 +26,19 @@ type PlayerLite = {
 
 export function PlayerRow({ player }: { player: PlayerLite }) {
   return (
-    <li className="flex items-center justify-between gap-3 p-4">
+    <li className="flex items-start justify-between gap-3 p-4">
       <div className="min-w-0">
         <div className="truncate font-medium">{player.name}</div>
-        <div className="text-muted-foreground truncate text-sm">
-          {player.email}
-          {player.handicapIndex != null ? (
-            <span className="ml-2">· HI {formatIndex(player.handicapIndex)}</span>
-          ) : null}
-        </div>
+        <div className="text-muted-foreground truncate text-sm">{player.email}</div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <ToggleActive id={player.id} active={player.active} />
-        <EditDialog player={player} />
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <span className="text-muted-foreground text-xs tabular-nums">
+          {player.handicapIndex != null ? `HI ${formatIndex(player.handicapIndex)}` : "HI —"}
+        </span>
+        <div className="flex items-center gap-2">
+          <ToggleActive id={player.id} active={player.active} />
+          <EditDialog player={player} />
+        </div>
       </div>
     </li>
   );

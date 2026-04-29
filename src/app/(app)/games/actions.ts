@@ -131,6 +131,8 @@ export async function saveRosterAction(gameId: string, rows: unknown): Promise<A
   });
 
   revalidatePath(`/games/${gameId}`);
+  revalidatePath(`/games/${gameId}/roster`);
+  revalidatePath(`/games/${gameId}/groups`);
   return { ok: true };
 }
 
@@ -141,6 +143,7 @@ export async function addGroupAction(gameId: string): Promise<ActionResult> {
     data: { gameId, name: `Group ${count + 1}` },
   });
   revalidatePath(`/games/${gameId}`);
+  revalidatePath(`/games/${gameId}/groups`);
   return { ok: true };
 }
 
@@ -150,6 +153,7 @@ export async function removeGroupAction(groupId: string): Promise<ActionResult> 
   if (!group) return { ok: false, error: "Group not found" };
   await prisma.group.delete({ where: { id: groupId } });
   revalidatePath(`/games/${group.gameId}`);
+  revalidatePath(`/games/${group.gameId}/groups`);
   return { ok: true };
 }
 
@@ -166,6 +170,7 @@ export async function assignToGroupAction(
     update: { groupId },
   });
   revalidatePath(`/games/${group.gameId}`);
+  revalidatePath(`/games/${group.gameId}/groups`);
   return { ok: true };
 }
 
@@ -180,6 +185,7 @@ export async function unassignFromGroupAction(gameEntryId: string): Promise<Acti
     where: { groupId_gameEntryId: { groupId: member.groupId, gameEntryId } },
   });
   revalidatePath(`/games/${member.group.gameId}`);
+  revalidatePath(`/games/${member.group.gameId}/groups`);
   return { ok: true };
 }
 
@@ -302,5 +308,6 @@ export async function copyRosterFromLastGameAction(
   }
 
   revalidatePath(`/games/${gameId}`);
+  revalidatePath(`/games/${gameId}/roster`);
   return { ok: true, added: toAdd.length };
 }
