@@ -23,7 +23,7 @@ export function ScoreEntrySection({
 }) {
   if (groups.length === 0) {
     return (
-      <section className="rounded-lg border bg-white p-4">
+      <section className="bg-card rounded-lg border p-4">
         <p className="text-muted-foreground text-sm">
           No groups yet — set up groups to start entering scores.
         </p>
@@ -55,7 +55,7 @@ export function ScoreEntrySection({
           <span className="text-xs opacity-90">{ownGroup.memberNames.join(" · ")}</span>
         </Link>
       ) : (
-        <p className="text-muted-foreground rounded-lg border bg-white p-3 text-sm">
+        <p className="text-muted-foreground bg-card rounded-lg border p-3 text-sm">
           You&apos;re not in a group for this game. View any group below in read-only mode.
         </p>
       )}
@@ -67,7 +67,7 @@ export function ScoreEntrySection({
               <Link
                 href={`/games/${gameId}/groups/${g.id}/score`}
                 className={cn(
-                  "hover:bg-muted flex items-center justify-between gap-3 rounded-lg border bg-white p-3 transition-colors",
+                  "hover:bg-muted bg-card flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors",
                 )}
               >
                 <div className="min-w-0">

@@ -41,7 +41,7 @@ export default async function RosterPage() {
         <h2 className="text-sm font-medium">
           Active <span className="text-muted-foreground">({active.length})</span>
         </h2>
-        <ul className="divide-y rounded-lg border bg-white">
+        <ul className="bg-card divide-y rounded-lg border">
           {active.length === 0 ? (
             <li className="text-muted-foreground p-4 text-sm">No active players yet.</li>
           ) : (
@@ -55,7 +55,7 @@ export default async function RosterPage() {
           <h2 className="text-sm font-medium">
             Inactive <span className="text-muted-foreground">({inactive.length})</span>
           </h2>
-          <ul className="divide-y rounded-lg border bg-white">
+          <ul className="bg-card divide-y rounded-lg border">
             {inactive.map((p) => (
               <PlayerRow key={p.id} player={p} />
             ))}

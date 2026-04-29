@@ -170,7 +170,7 @@ export function RosterBuilder({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm">
+      <div className="bg-card flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm">
         <span className="text-muted-foreground">{selectedCount} selected</span>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={copyLast} disabled={pending}>
@@ -184,7 +184,7 @@ export function RosterBuilder({
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <ul className="divide-y rounded-lg border bg-white">
+      <ul className="bg-card divide-y rounded-lg border">
         {allPlayers.length === 0 ? (
           <li className="text-muted-foreground p-4 text-sm">
             No active players. Add some from the roster page first.
@@ -250,7 +250,7 @@ export function RosterBuilder({
 
 function ReadOnlyRoster({ entries, emptyHint }: { entries: Entry[]; emptyHint: string }) {
   return (
-    <ul className="divide-y rounded-lg border bg-white">
+    <ul className="bg-card divide-y rounded-lg border">
       {entries.length === 0 ? (
         <li className="text-muted-foreground p-4 text-sm">{emptyHint}</li>
       ) : (

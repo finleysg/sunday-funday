@@ -109,7 +109,7 @@ export function GroupBuilder({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm">
+      <div className="bg-card flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm">
         <span className="text-muted-foreground">
           {selected
             ? "Tap a group to assign — or tap the player again to cancel."
@@ -126,7 +126,7 @@ export function GroupBuilder({
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <section className={`space-y-2 rounded-lg border bg-white p-3 ${selected ? "" : ""}`}>
+      <section className={`bg-card space-y-2 rounded-lg border p-3 ${selected ? "" : ""}`}>
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">Unassigned</h3>
           {selected && editable ? (
@@ -162,7 +162,7 @@ export function GroupBuilder({
           return (
             <li
               key={g.id}
-              className="space-y-2 rounded-lg border bg-white p-3"
+              className="bg-card space-y-2 rounded-lg border p-3"
               onClick={() => editable && selected && assignSelectedTo(g.id)}
             >
               <div className="flex items-center justify-between gap-2">
@@ -184,7 +184,7 @@ export function GroupBuilder({
                 ) : null}
               </div>
               {over ? (
-                <p className="text-xs text-amber-700">
+                <p className="text-warning text-xs">
                   More than {SOFT_MAX} players — pace may suffer.
                 </p>
               ) : null}

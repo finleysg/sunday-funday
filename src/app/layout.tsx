@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Outfit, Geist_Mono } from "next/font/google";
+
+import { ThemeProvider } from "@/components/theme-provider";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -19,7 +22,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Sunday Fun Day",
-  description: "A small, focused scoring app for one friend group's Sunday rounds.",
+  description: "An app for our Sunday rounds.",
   applicationName: "Sunday Fun Day",
   appleWebApp: {
     capable: true,
@@ -27,8 +30,8 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: "/icons/icon.svg",
-    apple: "/icons/icon.svg",
+    icon: "/icons/sun.webp",
+    apple: "/icons/sun.webp",
   },
 };
 
@@ -45,8 +48,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${outfit.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -59,13 +59,13 @@ export default async function CourseDetailPage({ params }: { params: Params }) {
       </div>
 
       {locked ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="border-warning/40 bg-warning/10 text-warning rounded-lg border p-4 text-sm">
           This course has been used in a completed game and is locked. Add a new tee or deactivate
           an old one instead of editing.
         </div>
       ) : null}
 
-      <section className="space-y-3 rounded-lg border bg-white p-4">
+      <section className="bg-card space-y-3 rounded-lg border p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium">Pars</h2>
           {locked ? null : (
@@ -80,7 +80,7 @@ export default async function CourseDetailPage({ params }: { params: Params }) {
           <h2 className="text-sm font-medium">Tees</h2>
           <AddTeeDialog courseId={course.id} />
         </div>
-        <ul className="divide-y rounded-lg border bg-white">
+        <ul className="bg-card divide-y rounded-lg border">
           {course.tees.map((t) => (
             <li key={t.id} className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-3">

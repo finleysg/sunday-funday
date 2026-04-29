@@ -140,7 +140,7 @@ export function LeaderboardClient({
 
   return (
     <>
-      <header className="space-y-2 rounded-lg border bg-white p-4">
+      <header className="bg-card space-y-2 rounded-lg border p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold">{game.name}</h1>
@@ -187,7 +187,7 @@ export function LeaderboardClient({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-medium">Standings</h2>
           {selectedAId ? (
-            <p className="text-xs text-amber-900">
+            <p className="text-warning text-xs">
               Comparing with <span className="font-medium">{selectedAName}</span> — tap another
               player.{" "}
               <button type="button" className="underline" onClick={() => setSelectedAId(null)}>
@@ -198,7 +198,7 @@ export function LeaderboardClient({
             <p className="text-muted-foreground text-xs">Tap two players to compare (Nassau)</p>
           )}
         </div>
-        <div className="overflow-hidden rounded-lg border bg-white">
+        <div className="bg-card overflow-hidden rounded-lg border">
           <table className="w-full text-sm">
             <thead className="text-muted-foreground bg-muted/40 text-xs">
               <tr>
@@ -225,7 +225,7 @@ export function LeaderboardClient({
                       className={cn(
                         "hover:bg-muted/40 cursor-pointer",
                         isMe && "bg-primary/5",
-                        isSelected && "bg-amber-50 ring-1 ring-amber-300",
+                        isSelected && "bg-warning/10 ring-warning/40 ring-1",
                       )}
                       aria-current={isMe ? "true" : undefined}
                       aria-selected={isSelected}
@@ -279,7 +279,7 @@ export function LeaderboardClient({
             Skins ·{" "}
             <span className="text-muted-foreground">{formatSkins(leaderboard.skinsType)}</span>
           </h2>
-          <div className="overflow-hidden rounded-lg border bg-white">
+          <div className="bg-card overflow-hidden rounded-lg border">
             <table className="w-full text-sm">
               <thead className="text-muted-foreground bg-muted/40 text-xs">
                 <tr>

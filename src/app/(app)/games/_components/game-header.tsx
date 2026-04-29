@@ -38,7 +38,7 @@ export function GameHeader({ game, admin }: { game: GameSummary; admin: boolean 
   }
 
   return (
-    <header className="space-y-2 rounded-lg border bg-white p-4">
+    <header className="bg-card space-y-2 rounded-lg border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">{game.name}</h1>
@@ -77,9 +77,9 @@ export function GameHeader({ game, admin }: { game: GameSummary; admin: boolean 
 
 function StatusBadge({ status }: { status: GameSummary["status"] }) {
   const styles: Record<GameSummary["status"], string> = {
-    SETUP: "border-amber-300 bg-amber-50 text-amber-900",
-    IN_PROGRESS: "border-emerald-300 bg-emerald-50 text-emerald-900",
-    COMPLETE: "border-slate-300 bg-slate-50 text-slate-700",
+    SETUP: "border-warning/40 bg-warning/10 text-warning",
+    IN_PROGRESS: "border-success/40 bg-success/10 text-success",
+    COMPLETE: "border-info/40 bg-info/10 text-info",
   };
   const label: Record<GameSummary["status"], string> = {
     SETUP: "Setup",

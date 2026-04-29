@@ -42,7 +42,7 @@ export function CourseStep({
 
   return (
     <div className="space-y-5">
-      <section className="space-y-3 rounded-lg border bg-white p-4">
+      <section className="bg-card space-y-3 rounded-lg border p-4">
         <div className="space-y-1.5">
           <Label htmlFor="course-name">Course name</Label>
           <Input
@@ -56,7 +56,7 @@ export function CourseStep({
         </div>
       </section>
 
-      <section className="space-y-3 rounded-lg border bg-white p-4">
+      <section className="bg-card space-y-3 rounded-lg border p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium">Pars</h2>
           <p className="text-muted-foreground text-sm">Total {totalPar}</p>

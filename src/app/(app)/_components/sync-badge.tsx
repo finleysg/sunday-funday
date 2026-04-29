@@ -14,7 +14,7 @@ export function SyncBadge() {
   if (!enabled || count === 0) return null;
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900">
+    <div className="border-warning/40 bg-warning/10 text-warning flex items-center gap-1 rounded-full border px-2 py-1 text-xs">
       <CloudOffIcon className="size-3.5" aria-hidden />
       <span>
         <span className="font-medium tabular-nums">{count}</span>
@@ -25,7 +25,7 @@ export function SyncBadge() {
         size="icon-xs"
         onClick={syncNow}
         aria-label="Retry pending score writes now"
-        className="text-amber-900 hover:bg-amber-100"
+        className="text-warning hover:bg-warning/15"
       >
         <RefreshCwIcon />
       </Button>

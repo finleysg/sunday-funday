@@ -33,7 +33,7 @@ export function CreateGameForm({ courses }: { courses: Array<{ id: string; name:
       <p className="text-muted-foreground text-sm">
         We&apos;ll generate a fun random name for the game (you can rename it later).
       </p>
-      <section className="grid gap-4 rounded-lg border bg-white p-4 sm:grid-cols-2">
+      <section className="bg-card grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="cg-date">Date</Label>
           <Input

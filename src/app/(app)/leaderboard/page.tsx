@@ -39,7 +39,7 @@ export default async function LeaderboardIndexPage() {
           Pick a game to see live or final standings.
         </p>
       </div>
-      <ul className="divide-y rounded-lg border bg-white">
+      <ul className="bg-card divide-y rounded-lg border">
         {recent.length === 0 ? (
           <li className="text-muted-foreground p-4 text-sm">No games yet.</li>
         ) : (

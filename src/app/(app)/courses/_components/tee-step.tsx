@@ -63,7 +63,7 @@ export function TeeStep({
     <div className="space-y-5">
       <h2 className="text-sm font-medium">Tee {index + 1}</h2>
 
-      <section className="space-y-3 rounded-lg border bg-white p-4">
+      <section className="bg-card space-y-3 rounded-lg border p-4">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="tee-name">Name</Label>
@@ -103,7 +103,7 @@ export function TeeStep({
         </div>
       </section>
 
-      <section className="space-y-3 rounded-lg border bg-white p-4">
+      <section className="bg-card space-y-3 rounded-lg border p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-medium">Stroke index</h3>
           <p className={siErrors ? "text-destructive text-xs" : "text-muted-foreground text-xs"}>

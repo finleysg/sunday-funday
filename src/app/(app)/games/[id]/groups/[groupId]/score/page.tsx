@@ -94,17 +94,17 @@ export default async function ScoreEntryPage({ params }: { params: Params }) {
       </div>
 
       {!canEdit && game.status === "IN_PROGRESS" && !userIsMember ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <div className="border-warning/40 bg-warning/10 text-warning rounded-md border p-3 text-sm">
           You&apos;re not a member of this group. Scores are read-only here.
         </div>
       ) : null}
       {game.status === "COMPLETE" ? (
-        <div className="rounded-md border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="border-info/40 bg-info/10 text-info rounded-md border p-3 text-sm">
           Game complete — scoring is locked.
         </div>
       ) : null}
       {game.status === "SETUP" ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <div className="border-warning/40 bg-warning/10 text-warning rounded-md border p-3 text-sm">
           Game hasn&apos;t started yet — scores can&apos;t be entered until it goes live.
         </div>
       ) : null}

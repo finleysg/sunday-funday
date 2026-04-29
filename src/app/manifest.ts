@@ -18,16 +18,10 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#1f7d8a",
     icons: [
       {
-        src: "/icons/icon.svg",
+        src: "/icons/sun.webp",
         sizes: "192x192 512x512",
-        type: "image/svg+xml",
+        type: "image/webp",
         purpose: "any",
-      },
-      {
-        src: "/icons/icon-maskable.svg",
-        sizes: "192x192 512x512",
-        type: "image/svg+xml",
-        purpose: "maskable",
       },
     ],
   };

@@ -23,7 +23,7 @@ export function AddPlayerForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end"
+      className="bg-card grid gap-3 rounded-lg border p-4 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end"
     >
       <div className="space-y-1.5">
         <Label htmlFor="add-name">Name</Label>

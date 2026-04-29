@@ -28,7 +28,7 @@ export function SignInForm() {
 
   if (status === "sent") {
     return (
-      <div className="space-y-3 rounded-lg border bg-white p-6 text-sm">
+      <div className="bg-card space-y-3 rounded-lg border p-6 text-sm">
         <p className="font-medium">Check your email.</p>
         <p className="text-muted-foreground">
           If <span className="font-medium">{email}</span> is on the roster, we&apos;ve sent a
@@ -49,7 +49,7 @@ export function SignInForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-lg border bg-white p-6">
+    <form onSubmit={onSubmit} className="bg-card space-y-4 rounded-lg border p-6">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input

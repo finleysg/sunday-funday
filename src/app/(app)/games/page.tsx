@@ -47,7 +47,7 @@ export default async function GamesPage() {
       {todayInProgress.length > 0 ? (
         <section className="space-y-2">
           <h2 className="text-sm font-medium">Today</h2>
-          <ul className="divide-y rounded-lg border bg-white">
+          <ul className="bg-card divide-y rounded-lg border">
             {todayInProgress.map((g) => (
               <GameRow key={g.id} game={g} />
             ))}
@@ -57,7 +57,7 @@ export default async function GamesPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium">All games</h2>
-        <ul className="divide-y rounded-lg border bg-white">
+        <ul className="bg-card divide-y rounded-lg border">
           {others.length === 0 && todayInProgress.length === 0 ? (
             <li className="text-muted-foreground p-4 text-sm">
               No games yet.{admin ? " Click “Create game” to start." : ""}
@@ -100,9 +100,9 @@ function GameRow({ game }: { game: GameRowData }) {
 
 function StatusBadge({ status }: { status: GameRowData["status"] }) {
   const styles: Record<GameRowData["status"], string> = {
-    SETUP: "border-amber-300 bg-amber-50 text-amber-900",
-    IN_PROGRESS: "border-emerald-300 bg-emerald-50 text-emerald-900",
-    COMPLETE: "border-slate-300 bg-slate-50 text-slate-700",
+    SETUP: "border-warning/40 bg-warning/10 text-warning",
+    IN_PROGRESS: "border-success/40 bg-success/10 text-success",
+    COMPLETE: "border-info/40 bg-info/10 text-info",
   };
   const label: Record<GameRowData["status"], string> = {
     SETUP: "Setup",

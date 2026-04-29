@@ -234,7 +234,7 @@ function HoleNav({
             type="button"
             onClick={() => onJump(h)}
             className={cn(
-              "rounded border bg-white py-1 text-xs",
+              "bg-card rounded border py-1 text-xs",
               h === hole ? "border-primary bg-primary/10 font-semibold" : "border-border",
             )}
             aria-current={h === hole ? "true" : undefined}
@@ -267,7 +267,7 @@ function HolePanel({
   onAdvance: (fromIndex: number) => void;
 }) {
   return (
-    <ul className="divide-y rounded-lg border bg-white">
+    <ul className="bg-card divide-y rounded-lg border">
       {players.length === 0 ? (
         <li className="text-muted-foreground p-4 text-sm">No players in this group.</li>
       ) : (
@@ -375,7 +375,7 @@ function PlayerRow({
         <div className="text-muted-foreground truncate text-xs">
           {player.teeName} · CH{" "}
           {player.courseHandicap > 0 ? player.courseHandicap : `+${-player.courseHandicap}`}
-          {high ? <span className="ml-2 text-amber-700">· {strokes}? double-check</span> : null}
+          {high ? <span className="text-warning ml-2">· {strokes}? double-check</span> : null}
         </div>
       </div>
       <input
@@ -414,7 +414,7 @@ function PlayerRow({
           if (e.key === "Enter") e.currentTarget.blur();
         }}
         className={cn(
-          "border-input ring-ring h-10 w-16 rounded-md border bg-white text-center text-lg font-semibold tabular-nums focus-visible:ring-2 focus-visible:outline-none",
+          "border-input ring-ring bg-card h-10 w-16 rounded-md border text-center text-lg font-semibold tabular-nums focus-visible:ring-2 focus-visible:outline-none",
           strokes == null && "text-muted-foreground border-dashed",
           !canEdit && "cursor-default opacity-90",
         )}

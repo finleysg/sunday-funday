@@ -158,7 +158,7 @@ function ReviewStep({
   const totalPar = course.pars.reduce((s, p) => s + p, 0);
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border bg-white p-4">
+      <section className="bg-card rounded-lg border p-4">
         <div className="flex items-center justify-between gap-2">
           <div>
             <h2 className="font-medium">{course.name || "(unnamed course)"}</h2>
@@ -185,7 +185,7 @@ function ReviewStep({
             Add another tee
           </Button>
         </div>
-        <ul className="divide-y rounded-lg border bg-white">
+        <ul className="bg-card divide-y rounded-lg border">
           {tees.map((t, i) => (
             <li key={i} className="flex items-center justify-between gap-3 p-4">
               <div className="min-w-0">

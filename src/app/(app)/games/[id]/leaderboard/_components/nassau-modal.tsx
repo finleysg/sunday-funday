@@ -69,10 +69,10 @@ export function NassauModal({
 function Segment({ label, segment }: { label: string; segment: NassauResult["front"] }) {
   const tone =
     segment.status === "won"
-      ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+      ? "border-success/40 bg-success/10 text-success"
       : segment.status === "halved"
-        ? "border-slate-300 bg-slate-50 text-slate-700"
-        : "border-amber-300 bg-amber-50 text-amber-900";
+        ? "border-info/40 bg-info/10 text-info"
+        : "border-warning/40 bg-warning/10 text-warning";
   return (
     <div className={`flex items-center justify-between rounded-md border px-3 py-2 ${tone}`}>
       <span className="text-xs font-medium tracking-wide uppercase">{label}</span>

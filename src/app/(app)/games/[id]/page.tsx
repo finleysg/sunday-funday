@@ -137,7 +137,7 @@ function SetupStepCard({
     <li>
       <Link
         href={href}
-        className="hover:bg-muted block space-y-1 rounded-lg border bg-white p-4 transition-colors"
+        className="hover:bg-muted bg-card block space-y-1 rounded-lg border p-4 transition-colors"
       >
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-medium">{title}</h3>
