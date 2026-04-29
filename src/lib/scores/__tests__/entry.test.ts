@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  firstHoleNeedingScore,
-  isSuspiciouslyHigh,
-  shouldAutoAdvance,
-  type GroupHoleScore,
-} from "../entry";
+import { firstHoleNeedingScore, isSuspiciouslyHigh, type GroupHoleScore } from "../entry";
 
 const mkHole = (holeNumber: number, entries: GroupHoleScore[]) => ({
   holeNumber,
@@ -67,23 +62,5 @@ describe("isSuspiciouslyHigh", () => {
     [9, 5, false],
   ])("strokes=%s par=%i → %s", (strokes, par, expected) => {
     expect(isSuspiciouslyHigh(strokes, par)).toBe(expected);
-  });
-});
-
-describe("shouldAutoAdvance", () => {
-  it("returns false when any entry is null", () => {
-    expect(shouldAutoAdvance([e("a", 4), e("b", null)])).toBe(false);
-  });
-
-  it("returns true when every entry has a score", () => {
-    expect(shouldAutoAdvance([e("a", 4), e("b", 5)])).toBe(true);
-  });
-
-  it("returns true for a single-member group with a score", () => {
-    expect(shouldAutoAdvance([e("a", 4)])).toBe(true);
-  });
-
-  it("returns false for an empty entries list", () => {
-    expect(shouldAutoAdvance([])).toBe(false);
   });
 });

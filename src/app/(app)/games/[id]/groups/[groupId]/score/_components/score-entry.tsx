@@ -1,12 +1,12 @@
 "use client";
 
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, MinusIcon, PlusIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { firstHoleNeedingScore, isSuspiciouslyHigh, shouldAutoAdvance } from "@/lib/scores/entry";
+import { firstHoleNeedingScore, isSuspiciouslyHigh } from "@/lib/scores/entry";
 import { strokesOnHole } from "@/lib/scoring/strokes";
 import { cn } from "@/lib/utils";
 
@@ -134,40 +134,6 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
     },
     [canEdit, gameId, scores],
   );
-
-  // Auto-advance with undo when all entries on the current hole are filled.
-  // We track the previous "filled" state *per hole* so that simply navigating
-  // back to a complete hole doesn't bounce the user forward again — only a
-  // fresh transition from "any null" → "all filled" on the *same* hole counts.
-  const prevAllFilledByHole = useRef(new Map<number, boolean>());
-  useEffect(() => {
-    const currentHole = holeIndex + 1;
-    const entries = players.map((p) => ({
-      gameEntryId: p.gameEntryId,
-      strokes: scores.get(reqKey(p.gameEntryId, currentHole)) ?? null,
-    }));
-    const filled = shouldAutoAdvance(entries);
-    const wasFilled = prevAllFilledByHole.current.get(currentHole) ?? filled;
-    prevAllFilledByHole.current.set(currentHole, filled);
-
-    if (!canEdit) return;
-    if (!filled || wasFilled) return;
-    if (holeIndex >= HOLES - 1) return;
-
-    const fromIndex = holeIndex;
-    // Defer slightly so the optimistic value paint settles first.
-    const timer = setTimeout(() => {
-      goToHole(fromIndex + 1);
-      toast.success(`Hole ${fromIndex + 1} done`, {
-        action: {
-          label: "Undo",
-          onClick: () => goToHole(fromIndex),
-        },
-        duration: 4000,
-      });
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [holeIndex, scores, players, canEdit, goToHole]);
 
   return (
     <div className="space-y-4">
@@ -316,48 +282,35 @@ function PlayerRow({
   canEdit: boolean;
   onWrite: (strokes: number | null) => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(() => (strokes != null ? String(strokes) : ""));
+  const focusedRef = useRef(false);
+
+  // Sync the input from external updates (initial load, optimistic save round-
+  // trip, another collaborator's write) only when the user isn't actively
+  // editing — otherwise we'd clobber their in-progress keystrokes.
+  useEffect(() => {
+    if (focusedRef.current) return;
+    setDraft(strokes != null ? String(strokes) : "");
+  }, [strokes]);
 
   const si = player.strokeIndexes[holeNumber - 1] ?? holeNumber;
   const strokesOnThisHole = strokesOnHole(player.courseHandicap, si);
 
-  const decrement = () => {
+  const commit = () => {
     if (!canEdit) return;
-    if (strokes == null) {
-      onWrite(Math.max(MIN_STROKES, par - 1));
-      return;
-    }
-    if (strokes <= MIN_STROKES) return;
-    onWrite(strokes - 1);
-  };
-  const increment = () => {
-    if (!canEdit) return;
-    if (strokes == null) {
-      onWrite(Math.min(MAX_STROKES, par + 1));
-      return;
-    }
-    if (strokes >= MAX_STROKES) return;
-    onWrite(strokes + 1);
-  };
-  const startEdit = () => {
-    if (!canEdit) return;
-    setDraft(strokes != null ? String(strokes) : "");
-    setEditing(true);
-  };
-  const commitEdit = () => {
-    setEditing(false);
-    if (draft === "") {
+    const trimmed = draft.trim();
+    if (trimmed === "") {
       if (strokes != null) onWrite(null);
       return;
     }
-    const n = Number.parseInt(draft, 10);
+    const n = Number.parseInt(trimmed, 10);
     if (Number.isFinite(n) && n >= MIN_STROKES && n <= MAX_STROKES) {
-      onWrite(n);
+      if (n !== strokes) onWrite(n);
+      setDraft(String(n));
+    } else {
+      // Out-of-range or unparseable: revert to the last saved value.
+      setDraft(strokes != null ? String(strokes) : "");
     }
-  };
-  const cancelEdit = () => {
-    setEditing(false);
   };
 
   const high = isSuspiciouslyHigh(strokes, par);
@@ -393,55 +346,33 @@ function PlayerRow({
           {high ? <span className="ml-2 text-amber-700">· {strokes}? double-check</span> : null}
         </div>
       </div>
-      <div className="flex items-center gap-1">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={decrement}
-          disabled={!canEdit}
-          aria-label="Subtract one stroke"
-        >
-          <MinusIcon />
-        </Button>
-        {editing ? (
-          <input
-            autoFocus
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.replace(/[^0-9]/g, ""))}
-            onBlur={commitEdit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitEdit();
-              if (e.key === "Escape") cancelEdit();
-            }}
-            className="border-input ring-ring h-9 w-12 rounded-md border bg-white text-center text-base tabular-nums focus-visible:ring-2 focus-visible:outline-none"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={startEdit}
-            disabled={!canEdit}
-            aria-label="Edit strokes directly"
-            className={cn(
-              "h-9 w-12 rounded-md border text-center text-base font-semibold tabular-nums transition-colors",
-              strokes == null ? "text-muted-foreground border-dashed" : "border-input bg-white",
-              !canEdit && "cursor-default opacity-90",
-            )}
-          >
-            {strokes ?? "—"}
-          </button>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={MIN_STROKES}
+        max={MAX_STROKES}
+        step={1}
+        value={draft}
+        disabled={!canEdit}
+        aria-label={`Strokes for ${player.playerName} on hole ${holeNumber}`}
+        onFocus={(e) => {
+          focusedRef.current = true;
+          e.currentTarget.select();
+        }}
+        onBlur={() => {
+          focusedRef.current = false;
+          commit();
+        }}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+        className={cn(
+          "border-input ring-ring h-10 w-16 rounded-md border bg-white text-center text-lg font-semibold tabular-nums focus-visible:ring-2 focus-visible:outline-none",
+          strokes == null && "text-muted-foreground border-dashed",
+          !canEdit && "cursor-default opacity-90",
         )}
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={increment}
-          disabled={!canEdit}
-          aria-label="Add one stroke"
-        >
-          <PlusIcon />
-        </Button>
-      </div>
+      />
     </li>
   );
 }

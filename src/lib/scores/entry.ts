@@ -27,10 +27,3 @@ export function isSuspiciouslyHigh(strokes: number | null, par: number): boolean
   if (strokes == null) return false;
   return strokes >= par * 2;
 }
-
-// Auto-advance trigger: after a write, if every entry on the current hole
-// has a non-null score, the carousel should move to the next hole.
-export function shouldAutoAdvance(entries: GroupHoleScore[]): boolean {
-  if (entries.length === 0) return false;
-  return entries.every((e) => e.strokes != null);
-}
