@@ -9,9 +9,9 @@ export function ParGrid({
   values: number[];
   onChange: (next: number[]) => void;
 }) {
-  function setOne(i: number, v: number) {
+  function setOne(i: number, raw: string) {
     const next = values.slice();
-    next[i] = v;
+    next[i] = raw === "" ? Number.NaN : Number(raw);
     onChange(next);
   }
   return (
@@ -25,7 +25,7 @@ export function ParGrid({
             min={3}
             max={7}
             value={Number.isFinite(v) ? v : ""}
-            onChange={(e) => setOne(i, Number(e.target.value))}
+            onChange={(e) => setOne(i, e.target.value)}
             className="h-9 px-1 text-center"
           />
         </label>
