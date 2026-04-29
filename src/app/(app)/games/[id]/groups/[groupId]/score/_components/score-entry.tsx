@@ -1,12 +1,17 @@
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { firstHoleNeedingScore, isSuspiciouslyHigh } from "@/lib/scores/entry";
+import {
+  firstHoleNeedingScore,
+  firstPlayerIndexNeedingScore,
+  isSuspiciouslyHigh,
+  nextPlayerIndex,
+  shouldAutoAdvanceOnKeystroke,
+} from "@/lib/scores/entry";
 import { strokesOnHole } from "@/lib/scoring/strokes";
 import { cn } from "@/lib/utils";
 
@@ -64,29 +69,50 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
     [players],
   );
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    startIndex: initialHole - 1,
-    loop: false,
-    watchDrag: true,
-    duration: 18,
-  });
   const [holeIndex, setHoleIndex] = useState(initialHole - 1);
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    const onSelect = () => setHoleIndex(emblaApi.selectedScrollSnap());
-    emblaApi.on("select", onSelect);
-    return () => {
-      emblaApi.off("select", onSelect);
-    };
-  }, [emblaApi]);
+  const goToHole = useCallback((h: number) => {
+    setHoleIndex(Math.max(0, Math.min(HOLES - 1, h)));
+  }, []);
 
-  const goToHole = useCallback(
-    (h: number) => {
-      const clamped = Math.max(0, Math.min(HOLES - 1, h));
-      emblaApi?.scrollTo(clamped);
+  // Refs to each player's input on the current hole so we can move focus
+  // through the row as scores are entered.
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Read the current optimistic scores via a ref so the landing-focus effect
+  // only reruns on hole navigation, not on every keystroke.
+  const scoresRef = useRef(scores);
+  useEffect(() => {
+    scoresRef.current = scores;
+  });
+
+  // When landing on a hole, focus the first player whose score is still
+  // missing (or the first input if everyone is already in).
+  useEffect(() => {
+    if (!canEdit || players.length === 0) return;
+    const currentHole = holeIndex + 1;
+    const strokesByPlayer = players.map(
+      (p) => scoresRef.current.get(reqKey(p.gameEntryId, currentHole)) ?? null,
+    );
+    const targetIdx = firstPlayerIndexNeedingScore(strokesByPlayer);
+    const el = inputRefs.current[targetIdx];
+    if (el) {
+      el.focus();
+      el.select();
+    }
+  }, [holeIndex, players, canEdit]);
+
+  const advanceFrom = useCallback(
+    (fromIndex: number) => {
+      if (players.length === 0) return;
+      const next = nextPlayerIndex(fromIndex, players.length);
+      const el = inputRefs.current[next];
+      if (el) {
+        el.focus();
+        el.select();
+      }
     },
-    [emblaApi],
+    [players.length],
   );
 
   // Track in-flight requests so a slower previous response doesn't clobber a
@@ -145,26 +171,16 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
         onJump={(h) => goToHole(h - 1)}
       />
 
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
-          {Array.from({ length: HOLES }, (_, i) => i + 1).map((holeNumber) => (
-            <div
-              key={holeNumber}
-              className="min-w-0 shrink-0 grow-0 basis-full px-1"
-              aria-hidden={holeIndex !== holeNumber - 1}
-            >
-              <HolePanel
-                holeNumber={holeNumber}
-                par={parsByHole[holeNumber - 1] ?? 4}
-                players={players}
-                scores={scores}
-                canEdit={canEdit}
-                onWrite={writeScore}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      <HolePanel
+        holeNumber={holeIndex + 1}
+        par={parsByHole[holeIndex] ?? 4}
+        players={players}
+        scores={scores}
+        canEdit={canEdit}
+        onWrite={writeScore}
+        inputRefs={inputRefs}
+        onAdvance={advanceFrom}
+      />
     </div>
   );
 }
@@ -238,6 +254,8 @@ function HolePanel({
   scores,
   canEdit,
   onWrite,
+  inputRefs,
+  onAdvance,
 }: {
   holeNumber: number;
   par: number;
@@ -245,13 +263,15 @@ function HolePanel({
   scores: Map<RequestKey, number | null>;
   canEdit: boolean;
   onWrite: (gameEntryId: string, holeNumber: number, strokes: number | null) => void;
+  inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
+  onAdvance: (fromIndex: number) => void;
 }) {
   return (
     <ul className="divide-y rounded-lg border bg-white">
       {players.length === 0 ? (
         <li className="text-muted-foreground p-4 text-sm">No players in this group.</li>
       ) : (
-        players.map((p) => (
+        players.map((p, idx) => (
           <PlayerRow
             key={p.gameEntryId}
             player={p}
@@ -260,6 +280,10 @@ function HolePanel({
             strokes={scores.get(reqKey(p.gameEntryId, holeNumber)) ?? null}
             canEdit={canEdit}
             onWrite={(strokes) => onWrite(p.gameEntryId, holeNumber, strokes)}
+            inputRef={(el) => {
+              inputRefs.current[idx] = el;
+            }}
+            onAdvance={() => onAdvance(idx)}
           />
         ))
       )}
@@ -274,6 +298,8 @@ function PlayerRow({
   strokes,
   canEdit,
   onWrite,
+  inputRef,
+  onAdvance,
 }: {
   player: Player;
   holeNumber: number;
@@ -281,9 +307,15 @@ function PlayerRow({
   strokes: number | null;
   canEdit: boolean;
   onWrite: (strokes: number | null) => void;
+  inputRef: (el: HTMLInputElement | null) => void;
+  onAdvance: () => void;
 }) {
   const [draft, setDraft] = useState(() => (strokes != null ? String(strokes) : ""));
   const focusedRef = useRef(false);
+  // Set when an onChange auto-commits and moves focus to the next input. The
+  // resulting blur should NOT also run commit() — its closure may still hold
+  // the pre-keystroke draft and would write an empty/old value.
+  const skipNextBlurCommitRef = useRef(false);
 
   // Sync the input from external updates (initial load, optimistic save round-
   // trip, another collaborator's write) only when the user isn't actively
@@ -347,6 +379,7 @@ function PlayerRow({
         </div>
       </div>
       <input
+        ref={inputRef}
         type="number"
         inputMode="numeric"
         min={MIN_STROKES}
@@ -361,9 +394,22 @@ function PlayerRow({
         }}
         onBlur={() => {
           focusedRef.current = false;
+          if (skipNextBlurCommitRef.current) {
+            skipNextBlurCommitRef.current = false;
+            return;
+          }
           commit();
         }}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => {
+          const v = e.target.value;
+          setDraft(v);
+          if (shouldAutoAdvanceOnKeystroke(v)) {
+            const n = Number.parseInt(v, 10);
+            if (n !== strokes) onWrite(n);
+            skipNextBlurCommitRef.current = true;
+            onAdvance();
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}

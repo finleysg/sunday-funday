@@ -27,3 +27,26 @@ export function isSuspiciouslyHigh(strokes: number | null, par: number): boolean
   if (strokes == null) return false;
   return strokes >= par * 2;
 }
+
+// True when the typed value is an unambiguous, in-range score and the row
+// should auto-commit and move focus to the next player. The deliberate
+// exception is "1" — it could still grow into 10–15, or be a real hole-
+// in-one — so we wait for blur/Enter rather than guessing.
+export function shouldAutoAdvanceOnKeystroke(value: string): boolean {
+  return /^[2-9]$/.test(value) || /^1[0-5]$/.test(value);
+}
+
+// Index of the player whose input should receive focus when landing on a
+// hole: the first one with a missing score, falling back to 0 when every
+// score is filled (or the list is empty).
+export function firstPlayerIndexNeedingScore(strokes: (number | null)[]): number {
+  const idx = strokes.findIndex((s) => s == null);
+  return idx >= 0 ? idx : 0;
+}
+
+// Index to focus after a player's score is auto-committed. Wraps back to 0
+// after the last player so the typist stays in flow.
+export function nextPlayerIndex(fromIndex: number, count: number): number {
+  if (count <= 0) return 0;
+  return (fromIndex + 1) % count;
+}

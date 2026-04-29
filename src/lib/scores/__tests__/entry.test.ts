@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { firstHoleNeedingScore, isSuspiciouslyHigh, type GroupHoleScore } from "../entry";
+import {
+  firstHoleNeedingScore,
+  firstPlayerIndexNeedingScore,
+  isSuspiciouslyHigh,
+  nextPlayerIndex,
+  shouldAutoAdvanceOnKeystroke,
+  type GroupHoleScore,
+} from "../entry";
 
 const mkHole = (holeNumber: number, entries: GroupHoleScore[]) => ({
   holeNumber,
@@ -62,5 +69,67 @@ describe("isSuspiciouslyHigh", () => {
     [9, 5, false],
   ])("strokes=%s par=%i → %s", (strokes, par, expected) => {
     expect(isSuspiciouslyHigh(strokes, par)).toBe(expected);
+  });
+});
+
+describe("shouldAutoAdvanceOnKeystroke", () => {
+  it.each<[string, boolean]>([
+    ["", false],
+    ["1", false], // ambiguous: could be hole-in-one or partial 10-15
+    ["2", true],
+    ["3", true],
+    ["9", true],
+    ["10", true],
+    ["11", true],
+    ["15", true],
+    ["16", false], // out of range, wait for blur to revert
+    ["19", false],
+    ["20", false], // also out of range; only 1x is valid two-digit
+    ["0", false], // not a valid score
+    ["100", false], // too long
+    [" 5", false], // typed-leading-space (rare, but be strict)
+    ["5 ", false],
+    ["1.5", false],
+    ["a", false],
+  ])("%s → %s", (value, expected) => {
+    expect(shouldAutoAdvanceOnKeystroke(value)).toBe(expected);
+  });
+});
+
+describe("firstPlayerIndexNeedingScore", () => {
+  it("returns 0 when the first player is missing", () => {
+    expect(firstPlayerIndexNeedingScore([null, 5, 4])).toBe(0);
+  });
+
+  it("returns the index of the first null score", () => {
+    expect(firstPlayerIndexNeedingScore([6, null, 4])).toBe(1);
+  });
+
+  it("falls back to 0 when every player is filled in", () => {
+    expect(firstPlayerIndexNeedingScore([4, 5, 6])).toBe(0);
+  });
+
+  it("falls back to 0 for an empty list", () => {
+    expect(firstPlayerIndexNeedingScore([])).toBe(0);
+  });
+});
+
+describe("nextPlayerIndex", () => {
+  it("advances to the next index", () => {
+    expect(nextPlayerIndex(0, 4)).toBe(1);
+    expect(nextPlayerIndex(2, 4)).toBe(3);
+  });
+
+  it("wraps from the last index back to the first", () => {
+    expect(nextPlayerIndex(3, 4)).toBe(0);
+  });
+
+  it("returns 0 for an empty list (defensive)", () => {
+    expect(nextPlayerIndex(0, 0)).toBe(0);
+    expect(nextPlayerIndex(5, 0)).toBe(0);
+  });
+
+  it("works for a single-player group (always self)", () => {
+    expect(nextPlayerIndex(0, 1)).toBe(0);
   });
 });
