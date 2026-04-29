@@ -7,10 +7,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { computeCourseHandicap } from "@/lib/scoring/course-handicap";
 
 import { copyRosterFromLastGameAction, saveRosterAction } from "../actions";
 
-type Player = { id: string; name: string; email: string };
+type Player = { id: string; name: string; email: string; handicapIndex: number | null };
 type Tee = { id: string; name: string; rating: number; slope: number };
 type Entry = {
   playerId: string;
@@ -31,6 +32,7 @@ type Row = {
 export function RosterBuilder({
   gameId,
   editable,
+  coursePar,
   allPlayers,
   tees,
   entries,
@@ -38,6 +40,7 @@ export function RosterBuilder({
 }: {
   gameId: string;
   editable: boolean;
+  coursePar: number;
   allPlayers: Player[];
   tees: Tee[];
   entries: Entry[];
@@ -46,6 +49,28 @@ export function RosterBuilder({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const teesById = useMemo(() => {
+    const m = new Map<string, Tee>();
+    for (const t of tees) m.set(t.id, t);
+    return m;
+  }, [tees]);
+
+  const computeForPlayer = useMemo(
+    () =>
+      (player: Player, teeId: string): number | null => {
+        if (player.handicapIndex == null) return null;
+        const tee = teesById.get(teeId);
+        if (!tee) return null;
+        return computeCourseHandicap({
+          handicapIndex: player.handicapIndex,
+          slope: tee.slope,
+          rating: tee.rating,
+          par: coursePar,
+        });
+      },
+    [coursePar, teesById],
+  );
 
   const initial = useMemo<Row[]>(() => {
     const byPlayer = new Map<string, Entry>();
@@ -64,19 +89,32 @@ export function RosterBuilder({
       }
       const last = lastUsed[p.id];
       const teeId = last && teeIdsAvailable.has(last.teeId) ? last.teeId : fallbackTeeId;
+      const computed = computeForPlayer(p, teeId);
       return {
         playerId: p.id,
         selected: false,
         teeId,
-        courseHandicap: last?.courseHandicap ?? 18,
+        courseHandicap: computed ?? last?.courseHandicap ?? Number.NaN,
       };
     });
-  }, [allPlayers, entries, lastUsed, tees]);
+  }, [allPlayers, entries, lastUsed, tees, computeForPlayer]);
 
   const [rows, setRows] = useState<Row[]>(initial);
 
   function update(playerId: string, patch: Partial<Row>) {
     setRows((prev) => prev.map((r) => (r.playerId === playerId ? { ...r, ...patch } : r)));
+  }
+
+  function changeTee(player: Player, teeId: string) {
+    const computed = computeForPlayer(player, teeId);
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.playerId !== player.id) return r;
+        // If we can compute from the player's index, refresh the handicap to
+        // match the new tee. Otherwise leave whatever value is already there.
+        return computed == null ? { ...r, teeId } : { ...r, teeId, courseHandicap: computed };
+      }),
+    );
   }
 
   const selectedCount = rows.filter((r) => r.selected).length;
@@ -170,7 +208,7 @@ export function RosterBuilder({
                 </div>
                 <select
                   value={row.teeId}
-                  onChange={(e) => update(p.id, { teeId: e.target.value })}
+                  onChange={(e) => changeTee(p, e.target.value)}
                   disabled={!row.selected || tees.length === 0}
                   className="border-input bg-background h-9 rounded-md border px-2 text-sm disabled:opacity-50"
                   aria-label={`Tee for ${p.name}`}

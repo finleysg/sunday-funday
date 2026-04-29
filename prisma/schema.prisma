@@ -77,12 +77,15 @@ model Verification {
 }
 
 model Player {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  active        Boolean  @default(true)
+  // WHS Handicap Index. Course handicap is derived per (course, tee) at
+  // roster time via `computeCourseHandicap` and snapshotted onto GameEntry.
+  handicapIndex Decimal? @db.Decimal(3, 1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   entries GameEntry[]
 

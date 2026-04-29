@@ -29,6 +29,7 @@ export default async function GameDetailPage({ params }: { params: Params }) {
             orderBy: { name: "asc" },
             select: { id: true, name: true, rating: true, slope: true },
           },
+          holes: { select: { par: true } },
         },
       },
       entries: {
@@ -58,11 +59,16 @@ export default async function GameDetailPage({ params }: { params: Params }) {
   });
   if (!game) notFound();
 
-  const players = await prisma.player.findMany({
+  const playersRaw = await prisma.player.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, handicapIndex: true },
   });
+  const players = playersRaw.map((p) => ({
+    ...p,
+    handicapIndex: p.handicapIndex == null ? null : Number(p.handicapIndex),
+  }));
+  const coursePar = game.course.holes.reduce((sum, h) => sum + h.par, 0);
 
   const lastUsed = await lastUsedTeeForPlayers(
     game.courseId,
@@ -126,6 +132,7 @@ export default async function GameDetailPage({ params }: { params: Params }) {
         <RosterBuilder
           gameId={game.id}
           editable={editable}
+          coursePar={coursePar}
           allPlayers={players}
           tees={game.course.tees.map((t) => ({
             id: t.id,

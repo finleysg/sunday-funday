@@ -23,7 +23,7 @@ export function AddPlayerForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+      className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end"
     >
       <div className="space-y-1.5">
         <Label htmlFor="add-name">Name</Label>
@@ -47,11 +47,26 @@ export function AddPlayerForm() {
           aria-invalid={state && !state.ok && state.field === "email" ? true : undefined}
         />
       </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="add-hi">Handicap index</Label>
+        <Input
+          id="add-hi"
+          name="handicapIndex"
+          type="number"
+          inputMode="decimal"
+          step="0.1"
+          min={-9.9}
+          max={54}
+          autoComplete="off"
+          className="w-24"
+          aria-invalid={state && !state.ok && state.field === "handicapIndex" ? true : undefined}
+        />
+      </div>
       <Button type="submit" disabled={pending}>
         {pending ? "Adding…" : "Add"}
       </Button>
       {state && !state.ok ? (
-        <p className="text-destructive text-sm sm:col-span-3">{state.error}</p>
+        <p className="text-destructive text-sm sm:col-span-4">{state.error}</p>
       ) : null}
     </form>
   );

@@ -21,6 +21,7 @@ type PlayerLite = {
   name: string;
   email: string;
   active: boolean;
+  handicapIndex: number | null;
 };
 
 export function PlayerRow({ player }: { player: PlayerLite }) {
@@ -28,7 +29,12 @@ export function PlayerRow({ player }: { player: PlayerLite }) {
     <li className="flex items-center justify-between gap-3 p-4">
       <div className="min-w-0">
         <div className="truncate font-medium">{player.name}</div>
-        <div className="text-muted-foreground truncate text-sm">{player.email}</div>
+        <div className="text-muted-foreground truncate text-sm">
+          {player.email}
+          {player.handicapIndex != null ? (
+            <span className="ml-2">· HI {formatIndex(player.handicapIndex)}</span>
+          ) : null}
+        </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <ToggleActive id={player.id} active={player.active} />
@@ -36,6 +42,10 @@ export function PlayerRow({ player }: { player: PlayerLite }) {
       </div>
     </li>
   );
+}
+
+function formatIndex(hi: number): string {
+  return hi < 0 ? `+${(-hi).toFixed(1)}` : hi.toFixed(1);
 }
 
 function ToggleActive({ id, active }: { id: string; active: boolean }) {
@@ -52,7 +62,10 @@ function ToggleActive({ id, active }: { id: string; active: boolean }) {
 
 function EditDialog({ player }: { player: PlayerLite }) {
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState<{ message: string; field?: "name" | "email" } | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    field?: "name" | "email" | "handicapIndex";
+  } | null>(null);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -102,6 +115,24 @@ function EditDialog({ player }: { player: PlayerLite }) {
               required
               aria-invalid={error?.field === "email" ? true : undefined}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`edit-hi-${player.id}`}>Handicap index</Label>
+            <Input
+              id={`edit-hi-${player.id}`}
+              name="handicapIndex"
+              type="number"
+              inputMode="decimal"
+              step="0.1"
+              min={-9.9}
+              max={54}
+              defaultValue={player.handicapIndex ?? ""}
+              className="w-32"
+              aria-invalid={error?.field === "handicapIndex" ? true : undefined}
+            />
+            <p className="text-muted-foreground text-xs">
+              Leave blank if unknown. Use a negative value for plus handicaps (e.g. -1.2).
+            </p>
           </div>
           {error ? <p className="text-destructive text-sm">{error.message}</p> : null}
           <DialogFooter>

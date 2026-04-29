@@ -6,9 +6,20 @@ import { PlayerRow } from "./player-row";
 
 export default async function RosterPage() {
   await requireAdmin();
-  const players = await prisma.player.findMany({
+  const playersRaw = await prisma.player.findMany({
     orderBy: [{ active: "desc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      active: true,
+      handicapIndex: true,
+    },
   });
+  const players = playersRaw.map((p) => ({
+    ...p,
+    handicapIndex: p.handicapIndex == null ? null : Number(p.handicapIndex),
+  }));
   const active = players.filter((p) => p.active);
   const inactive = players.filter((p) => !p.active);
 
