@@ -24,13 +24,11 @@ const SOFT_MAX = 5;
 export function GroupBuilder({
   gameId,
   status,
-  admin,
   unassigned,
   groups,
 }: {
   gameId: string;
   status: "SETUP" | "IN_PROGRESS" | "COMPLETE";
-  admin: boolean;
   unassigned: Member[];
   groups: Group[];
 }) {
@@ -40,7 +38,7 @@ export function GroupBuilder({
   const [selected, setSelected] = useState<string | null>(null);
   // selected is a gameEntryId of the player currently picked.
 
-  const editable = admin && status !== "COMPLETE";
+  const editable = status !== "COMPLETE";
 
   function clearSelection() {
     setSelected(null);
@@ -51,35 +49,25 @@ export function GroupBuilder({
     setSelected((prev) => (prev === gameEntryId ? null : gameEntryId));
   }
 
-  function withGuard(message: string, fn: () => Promise<void>) {
-    if (status === "IN_PROGRESS") {
-      const ok = window.confirm(
-        `${message}\n\nThe game is in progress — players may already have scores. Continue?`,
-      );
-      if (!ok) return;
-    }
-    setError(null);
-    startTransition(async () => {
-      await fn();
-      router.refresh();
-    });
-  }
-
   function assignSelectedTo(groupId: string) {
     if (!selected) return;
-    withGuard("Move this player into a different group?", async () => {
+    setError(null);
+    startTransition(async () => {
       const r = await assignToGroupAction(groupId, selected);
       if (!r.ok) setError(r.error);
       setSelected(null);
+      router.refresh();
     });
   }
 
   function unassignSelected() {
     if (!selected) return;
-    withGuard("Remove this player from their group?", async () => {
+    setError(null);
+    startTransition(async () => {
       const r = await unassignFromGroupAction(selected);
       if (!r.ok) setError(r.error);
       setSelected(null);
+      router.refresh();
     });
   }
 

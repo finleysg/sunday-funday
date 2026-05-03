@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 
 const HandicapIndexInput = z
   .union([z.literal(""), z.coerce.number().min(-9.9).max(54)])
@@ -40,7 +40,7 @@ export async function addPlayerAction(
   _prev: RosterActionResult | null,
   formData: FormData,
 ): Promise<RosterActionResult> {
-  await requireAdmin();
+  await requireSession();
   const parsed = PlayerInput.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -64,7 +64,7 @@ export async function updatePlayerAction(
   _prev: RosterActionResult | null,
   formData: FormData,
 ): Promise<RosterActionResult> {
-  await requireAdmin();
+  await requireSession();
   const id = String(formData.get("id") ?? "");
   if (!id) return { ok: false, error: "Missing id" };
 
@@ -88,7 +88,7 @@ export async function updatePlayerAction(
 }
 
 export async function setPlayerActiveAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireSession();
   const id = String(formData.get("id") ?? "");
   const active = formData.get("active") === "true";
   if (!id) return;

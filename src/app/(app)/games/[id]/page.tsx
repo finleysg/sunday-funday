@@ -48,7 +48,8 @@ export default async function GameDetailPage({ params }: { params: Params }) {
   const userGroupId = userEntry?.member?.groupId ?? null;
 
   const unassignedCount = game.entries.filter((e) => !e.member).length;
-  const setupAndAdmin = admin && game.status === "SETUP";
+  const inSetup = game.status === "SETUP";
+  const setupAndAdmin = admin && inSetup;
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
@@ -97,7 +98,7 @@ export default async function GameDetailPage({ params }: { params: Params }) {
             title="Roster"
             primary={`${game.entries.length} ${game.entries.length === 1 ? "player" : "players"}`}
             hint={
-              setupAndAdmin
+              inSetup
                 ? game.entries.length === 0
                   ? "Add players to get started."
                   : "Edit who's playing and which tees they're using."

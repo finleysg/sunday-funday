@@ -15,12 +15,10 @@ interface NavItem {
 const baseItems: NavItem[] = [
   { href: "/games", label: "Games", Icon: Trophy },
   { href: "/leaderboard", label: "Leaderboard", Icon: ListChecks },
+  { href: "/roster", label: "Roster", Icon: Users },
 ];
 
-const adminItems: NavItem[] = [
-  { href: "/roster", label: "Roster", Icon: Users },
-  { href: "/courses", label: "Courses", Icon: Settings },
-];
+const adminItems: NavItem[] = [{ href: "/courses", label: "Courses", Icon: Settings }];
 
 export function BottomNav({ admin }: { admin: boolean }) {
   const pathname = usePathname();

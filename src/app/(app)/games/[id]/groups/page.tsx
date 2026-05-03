@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 
@@ -10,8 +9,7 @@ import { GroupBuilder } from "../../_components/group-builder";
 type Params = Promise<{ id: string }>;
 
 export default async function GameGroupsPage({ params }: { params: Params }) {
-  const session = await requireSession();
-  const admin = isAdmin(session.user.email);
+  await requireSession();
   const { id } = await params;
 
   const game = await prisma.game.findUnique({
@@ -58,7 +56,7 @@ export default async function GameGroupsPage({ params }: { params: Params }) {
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">Groups</h1>
         <p className="text-muted-foreground text-sm">
-          {admin && game.status !== "COMPLETE"
+          {game.status !== "COMPLETE"
             ? "Tap a player, then tap a group to assign them."
             : "Playing groups for this game."}
         </p>
@@ -67,7 +65,6 @@ export default async function GameGroupsPage({ params }: { params: Params }) {
       <GroupBuilder
         gameId={game.id}
         status={game.status}
-        admin={admin}
         unassigned={game.entries
           .filter((e) => !e.member)
           .map((e) => ({

@@ -81,7 +81,7 @@ const RosterRow = z.object({
 });
 
 export async function saveRosterAction(gameId: string, rows: unknown): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSession();
   const parsed = z.array(RosterRow).safeParse(rows);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid roster" };
@@ -137,7 +137,7 @@ export async function saveRosterAction(gameId: string, rows: unknown): Promise<A
 }
 
 export async function addGroupAction(gameId: string): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSession();
   const count = await prisma.group.count({ where: { gameId } });
   await prisma.group.create({
     data: { gameId, name: `Group ${count + 1}` },
@@ -148,7 +148,7 @@ export async function addGroupAction(gameId: string): Promise<ActionResult> {
 }
 
 export async function removeGroupAction(groupId: string): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSession();
   const group = await prisma.group.findUnique({ where: { id: groupId } });
   if (!group) return { ok: false, error: "Group not found" };
   await prisma.group.delete({ where: { id: groupId } });
@@ -161,7 +161,7 @@ export async function assignToGroupAction(
   groupId: string,
   gameEntryId: string,
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSession();
   const group = await prisma.group.findUnique({ where: { id: groupId } });
   if (!group) return { ok: false, error: "Group not found" };
   await prisma.groupMember.upsert({
@@ -175,7 +175,7 @@ export async function assignToGroupAction(
 }
 
 export async function unassignFromGroupAction(gameEntryId: string): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSession();
   const member = await prisma.groupMember.findUnique({
     where: { gameEntryId },
     include: { group: true },
@@ -265,7 +265,7 @@ export async function reopenGameAction(gameId: string): Promise<ActionResult> {
 export async function copyRosterFromLastGameAction(
   gameId: string,
 ): Promise<{ ok: true; added: number } | { ok: false; error: string }> {
-  await requireAdmin();
+  await requireSession();
   const game = await prisma.game.findUnique({ where: { id: gameId } });
   if (!game) return { ok: false, error: "Game not found" };
   if (game.status === "COMPLETE") {
