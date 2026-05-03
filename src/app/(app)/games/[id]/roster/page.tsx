@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import { lastUsedTeeForPlayers } from "@/lib/games/last-used-tee";
 import { requireSession } from "@/lib/session";
@@ -11,8 +10,7 @@ import { RosterBuilder } from "../../_components/roster-builder";
 type Params = Promise<{ id: string }>;
 
 export default async function GameRosterPage({ params }: { params: Params }) {
-  const session = await requireSession();
-  const admin = isAdmin(session.user.email);
+  await requireSession();
   const { id } = await params;
 
   const game = await prisma.game.findUnique({
@@ -58,7 +56,7 @@ export default async function GameRosterPage({ params }: { params: Params }) {
   const lastUsedSerialized: Record<string, { teeId: string; courseHandicap: number }> = {};
   for (const [k, v] of lastUsed.entries()) lastUsedSerialized[k] = v;
 
-  const editable = admin && game.status === "SETUP";
+  const editable = game.status === "SETUP";
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">

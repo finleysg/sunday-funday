@@ -12,6 +12,7 @@ function buildPrisma(): PrismaClient {
     user: decodeURIComponent(parsed.username),
     password: decodeURIComponent(parsed.password),
     database: parsed.pathname.replace(/^\//, ""),
+    allowPublicKeyRetrieval: true,
   });
   return new PrismaClient({ adapter });
 }

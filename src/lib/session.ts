@@ -5,7 +5,11 @@ import { isAdmin } from "@/lib/admin";
 import { auth, type Session } from "@/lib/auth";
 
 export async function getSession(): Promise<Session | null> {
-  return auth.api.getSession({ headers: await headers() });
+  try {
+    return await auth.api.getSession({ headers: await headers() });
+  } catch {
+    return null;
+  }
 }
 
 export async function requireSession(): Promise<Session> {

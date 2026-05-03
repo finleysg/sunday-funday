@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 
 import { AddPlayerForm } from "./add-player-form";
 import { PlayerRow } from "./player-row";
 
 export default async function RosterPage() {
-  await requireAdmin();
+  await requireSession();
   const playersRaw = await prisma.player.findMany({
     orderBy: [{ active: "desc" }, { name: "asc" }],
     select: {
