@@ -39,8 +39,9 @@ export type LeaderboardRow = {
   // Format-specific summary suitable for display.
   primary: number;
   primaryLabel: string;
+  // Sum of entered gross strokes — informational, populated for every format.
+  grossTotal: number;
   // Optional fields per format / for skins display.
-  grossTotal?: number;
   quota?: number;
   skins: number;
 };
@@ -130,6 +131,7 @@ function formatRow(format: GameFormat, pars: number[], e: LeaderboardEntryInput)
       grossTotal: r.grossTotal,
     };
   }
+  const grossTotal = holes.reduce((sum, h) => sum + (h.grossStrokes ?? 0), 0);
   if (format === "STABLEFORD") {
     const r = stablefordResult(e.courseHandicap, holes);
     return {
@@ -140,6 +142,7 @@ function formatRow(format: GameFormat, pars: number[], e: LeaderboardEntryInput)
       thru: r.holesPlayed,
       primary: r.points,
       primaryLabel: `${r.points} pts`,
+      grossTotal,
     };
   }
   // CHICAGO_39
@@ -152,6 +155,7 @@ function formatRow(format: GameFormat, pars: number[], e: LeaderboardEntryInput)
     thru: r.holesPlayed,
     primary: r.vsQuota,
     primaryLabel: r.vsQuota >= 0 ? `+${r.vsQuota}` : `${r.vsQuota}`,
+    grossTotal,
     quota: chicagoQuota(e.courseHandicap),
   };
 }

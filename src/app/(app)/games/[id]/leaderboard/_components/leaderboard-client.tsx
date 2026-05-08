@@ -205,13 +205,16 @@ export function LeaderboardClient({
                 <th className="px-3 py-2 text-left font-medium">#</th>
                 <th className="px-3 py-2 text-left font-medium">Player</th>
                 <th className="px-3 py-2 text-right font-medium tabular-nums">{primaryHeader}</th>
+                <th className="text-muted-foreground px-3 py-2 text-right font-medium tabular-nums">
+                  Gross
+                </th>
                 <th className="text-muted-foreground px-3 py-2 text-right font-medium">Thru</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {leaderboard.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-muted-foreground p-4 text-sm">
+                  <td colSpan={5} className="text-muted-foreground p-4 text-sm">
                     No players yet.
                   </td>
                 </tr>
@@ -246,6 +249,9 @@ export function LeaderboardClient({
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">{row.primaryLabel}</td>
+                      <td className="text-muted-foreground px-3 py-2 text-right tabular-nums">
+                        {row.thru > 0 ? row.grossTotal : "—"}
+                      </td>
                       <td className="text-muted-foreground px-3 py-2 text-right tabular-nums">
                         {row.thru === 18 ? "F" : row.thru}
                       </td>
