@@ -50,3 +50,16 @@ export function nextPlayerIndex(fromIndex: number, count: number): number {
   if (count <= 0) return 0;
   return (fromIndex + 1) % count;
 }
+
+// True when an auto-commit on a hole should jump focus to the next hole
+// instead of the next player. We only do this during fresh entry — if the
+// cell already had a value, the user is correcting a score and shouldn't be
+// teleported away.
+export function shouldAdvanceToNextHole(
+  strokesByPlayer: (number | null)[],
+  wasNewEntry: boolean,
+): boolean {
+  if (!wasNewEntry) return false;
+  if (strokesByPlayer.length === 0) return false;
+  return strokesByPlayer.every((s) => s != null);
+}
