@@ -14,6 +14,10 @@ export const auth = betterAuth({
   baseURL,
   secret: process.env["BETTER_AUTH_SECRET"],
   database: prismaAdapter(prisma, { provider: "mysql" }),
+  session: {
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
+  },
   // Invite-only roster: better-auth must not auto-create users from a magic-link
   // verification. The Player table is the source of truth, and we only create a
   // matching User row inside our own sendMagicLink callback when the email is
