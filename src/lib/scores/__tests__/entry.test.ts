@@ -5,6 +5,7 @@ import {
   firstPlayerIndexNeedingScore,
   isSuspiciouslyHigh,
   nextPlayerIndex,
+  shouldAdvanceToNextHole,
   shouldAutoAdvanceOnKeystroke,
   type GroupHoleScore,
 } from "../entry";
@@ -131,5 +132,27 @@ describe("nextPlayerIndex", () => {
 
   it("works for a single-player group (always self)", () => {
     expect(nextPlayerIndex(0, 1)).toBe(0);
+  });
+});
+
+describe("shouldAdvanceToNextHole", () => {
+  it("advances when a fresh entry completes the hole", () => {
+    expect(shouldAdvanceToNextHole([4, 5, 6], true)).toBe(true);
+  });
+
+  it("does not advance when the just-edited cell already had a value", () => {
+    expect(shouldAdvanceToNextHole([4, 5, 6], false)).toBe(false);
+  });
+
+  it("does not advance when another player is still missing", () => {
+    expect(shouldAdvanceToNextHole([4, null, 6], true)).toBe(false);
+  });
+
+  it("does not advance for an empty group", () => {
+    expect(shouldAdvanceToNextHole([], true)).toBe(false);
+  });
+
+  it("advances for a single-player group on a fresh entry", () => {
+    expect(shouldAdvanceToNextHole([4], true)).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { ListChecksIcon, RefreshCwIcon } from "lucide-react";
+import { ChevronRightIcon, ListChecksIcon, RefreshCwIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -209,12 +209,13 @@ export function LeaderboardClient({
                   Gross
                 </th>
                 <th className="text-muted-foreground px-3 py-2 text-right font-medium">Thru</th>
+                <th className="px-2 py-2" aria-label="Scorecard" />
               </tr>
             </thead>
             <tbody className="divide-y">
               {leaderboard.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-muted-foreground p-4 text-sm">
+                  <td colSpan={6} className="text-muted-foreground p-4 text-sm">
                     No players yet.
                   </td>
                 </tr>
@@ -254,6 +255,16 @@ export function LeaderboardClient({
                       </td>
                       <td className="text-muted-foreground px-3 py-2 text-right tabular-nums">
                         {row.thru === 18 ? "F" : row.thru}
+                      </td>
+                      <td className="px-1 py-2 text-right">
+                        <Link
+                          href={`/games/${gameId}/scorecard/${row.gameEntryId}`}
+                          aria-label={`View scorecard for ${row.playerName}`}
+                          className="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring inline-flex size-8 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronRightIcon className="size-4" />
+                        </Link>
                       </td>
                     </tr>
                   );

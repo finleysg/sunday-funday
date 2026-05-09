@@ -10,6 +10,7 @@ import {
   firstPlayerIndexNeedingScore,
   isSuspiciouslyHigh,
   nextPlayerIndex,
+  shouldAdvanceToNextHole,
   shouldAutoAdvanceOnKeystroke,
 } from "@/lib/scores/entry";
 import { strokesOnHole } from "@/lib/scoring/strokes";
@@ -103,8 +104,21 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
   }, [holeIndex, players, canEdit]);
 
   const advanceFrom = useCallback(
-    (fromIndex: number) => {
+    (fromIndex: number, wasNewEntry: boolean) => {
       if (players.length === 0) return;
+
+      // If this fresh entry just completed the hole, jump to the next hole
+      // (unless we're already on 18). The landing-focus effect will move
+      // focus to the first missing player on the new hole.
+      const currentHole = holeIndex + 1;
+      const strokesByPlayer = players.map(
+        (p) => scoresRef.current.get(reqKey(p.gameEntryId, currentHole)) ?? null,
+      );
+      if (shouldAdvanceToNextHole(strokesByPlayer, wasNewEntry) && holeIndex < HOLES - 1) {
+        goToHole(holeIndex + 1);
+        return;
+      }
+
       const next = nextPlayerIndex(fromIndex, players.length);
       const el = inputRefs.current[next];
       if (el) {
@@ -112,7 +126,7 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
         el.select();
       }
     },
-    [players.length],
+    [players, holeIndex, goToHole],
   );
 
   // Track in-flight requests so a slower previous response doesn't clobber a
@@ -125,13 +139,14 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
     async (gameEntryId: string, holeNumber: number, strokes: number | null) => {
       if (!canEdit) return;
       const key = reqKey(gameEntryId, holeNumber);
-      const prevValue = scores.get(key) ?? null;
-      // Optimistic update.
-      setScores((m) => {
-        const next = new Map(m);
-        next.set(key, strokes);
-        return next;
-      });
+      const prevValue = scoresRef.current.get(key) ?? null;
+      // Optimistic update. Keep scoresRef in sync synchronously so callers
+      // that immediately read it (e.g. advanceFrom right after onWrite) see
+      // the just-written value instead of the pre-keystroke snapshot.
+      const optimistic = new Map(scoresRef.current);
+      optimistic.set(key, strokes);
+      scoresRef.current = optimistic;
+      setScores(optimistic);
       const myReq = ++reqCounter.current;
       latestReqId.current.set(key, myReq);
 
@@ -149,16 +164,15 @@ export function ScoreEntry({ gameId, canEdit, parsByHole, players }: Props) {
       } catch (err) {
         // Only revert if no newer write has come in for this cell.
         if (latestReqId.current.get(key) === myReq) {
-          setScores((m) => {
-            const next = new Map(m);
-            next.set(key, prevValue);
-            return next;
-          });
+          const reverted = new Map(scoresRef.current);
+          reverted.set(key, prevValue);
+          scoresRef.current = reverted;
+          setScores(reverted);
           toast.error(err instanceof Error ? err.message : "Save failed");
         }
       }
     },
-    [canEdit, gameId, scores],
+    [canEdit, gameId],
   );
 
   return (
@@ -264,7 +278,7 @@ function HolePanel({
   canEdit: boolean;
   onWrite: (gameEntryId: string, holeNumber: number, strokes: number | null) => void;
   inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
-  onAdvance: (fromIndex: number) => void;
+  onAdvance: (fromIndex: number, wasNewEntry: boolean) => void;
 }) {
   return (
     <ul className="bg-card divide-y rounded-lg border">
@@ -283,7 +297,7 @@ function HolePanel({
             inputRef={(el) => {
               inputRefs.current[idx] = el;
             }}
-            onAdvance={() => onAdvance(idx)}
+            onAdvance={(wasNewEntry) => onAdvance(idx, wasNewEntry)}
           />
         ))
       )}
@@ -308,7 +322,7 @@ function PlayerRow({
   canEdit: boolean;
   onWrite: (strokes: number | null) => void;
   inputRef: (el: HTMLInputElement | null) => void;
-  onAdvance: () => void;
+  onAdvance: (wasNewEntry: boolean) => void;
 }) {
   const [draft, setDraft] = useState(() => (strokes != null ? String(strokes) : ""));
   const focusedRef = useRef(false);
@@ -405,9 +419,10 @@ function PlayerRow({
           setDraft(v);
           if (shouldAutoAdvanceOnKeystroke(v)) {
             const n = Number.parseInt(v, 10);
+            const wasNewEntry = strokes == null;
             if (n !== strokes) onWrite(n);
             skipNextBlurCommitRef.current = true;
-            onAdvance();
+            onAdvance(wasNewEntry);
           }
         }}
         onKeyDown={(e) => {
